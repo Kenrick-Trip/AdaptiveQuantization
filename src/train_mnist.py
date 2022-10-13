@@ -26,7 +26,7 @@ def train(model: pl.LightningModule):
         logger=wlogger
     )
     trainer.fit(model, train_dl)
-    trainer.save_checkpoint(model.__class__.__name__+".pt")
+    trainer.save_checkpoint("checkpoints/"+model.__class__.__name__+".pt")
 
 
 def get_prediction(x, model: pl.LightningModule):
@@ -56,5 +56,5 @@ if __name__ == "__main__":
     model_class = MobileNetV3MNIST
     model = model_class()
     # train(model)
-    inf_model = model_class.load_from_checkpoint(model.__class__.__name__ + ".pt", map_location="cpu")
+    inf_model = model_class.load_from_checkpoint("checkpoints/"+model.__class__.__name__ + ".pt", map_location="cpu")
     inference(inf_model)

@@ -132,3 +132,4 @@ dmypy.json
 src/lightning_logs
 src/mnist
 src/wandb
+src/checkpoints/*
