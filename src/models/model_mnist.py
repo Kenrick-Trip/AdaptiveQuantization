@@ -1,12 +1,13 @@
 import pytorch_lightning as pl
 import torch
 from torch import nn
-from torchvision.models import resnet18
 
 
 class ModelForMNIST(pl.LightningModule):
     def __init__(self):
         super().__init__()
+        self.loss = nn.CrossEntropyLoss()
+        self.save_hyperparameters()
 
     def forward(self, x):
         return self.model(x)
@@ -19,4 +20,4 @@ class ModelForMNIST(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.RMSprop(self.parameters(), lr=0.005)
+        return torch.optim.RMSprop(self.parameters(), lr=0.001)

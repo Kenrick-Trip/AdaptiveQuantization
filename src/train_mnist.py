@@ -1,4 +1,5 @@
 import torch
+import wandb
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
@@ -7,20 +8,15 @@ from tqdm.autonotebook import tqdm
 from sklearn.metrics import classification_report
 from pytorch_lightning.loggers import WandbLogger
 
+from models.googlenet_mnist import GoogLeNetMNIST
 from models.mobilenet_v3_mnist import MobileNetV3MNIST
 from models.resnet18_mnist import ResNet18MNIST
 
 
-def main():
+def train(model: pl.LightningModule):
     batch_size = 32
     train_ds = MNIST("mnist", train=True, download=True, transform=ToTensor())
-    test_ds = MNIST("mnist", train=False, download=True, transform=ToTensor())
-
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=4)
-    test_dl = DataLoader(test_ds, batch_size=batch_size, num_workers=4)
-
-    model = MobileNetV3MNIST()
-
     wlogger = WandbLogger()
 
     trainer = pl.Trainer(
@@ -29,18 +25,8 @@ def main():
         devices=[0],
         logger=wlogger
     )
-
     trainer.fit(model, train_dl)
-    trainer.save_checkpoint("resnet18_mnist.pt")
-
-    inference_model = ResNet18MNIST.load_from_checkpoint("resnet18_mnist.pt", map_location="cpu")
-    true_y, pred_y = [], []
-    for batch in tqdm(iter(test_dl), total=len(test_dl)):
-        x, y = batch
-        true_y.extend(y)
-        preds, probs = get_prediction(x, inference_model)
-        pred_y.extend(preds.cpu())
-    print(classification_report(true_y, pred_y, digits=3))
+    trainer.save_checkpoint(model.__class__.__name__+".pt")
 
 
 def get_prediction(x, model: pl.LightningModule):
@@ -50,5 +36,24 @@ def get_prediction(x, model: pl.LightningModule):
     return predicted_class, probabilities
 
 
+def inference(inference_model: pl.LightningModule):
+    wandb.init(project="AdaptiveQuantization", entity="cbakos")
+    batch_size = 32
+    test_ds = MNIST("mnist", train=False, download=True, transform=ToTensor())
+    test_dl = DataLoader(test_ds, batch_size=batch_size, num_workers=4)
+    true_y, pred_y = [], []
+    for batch in tqdm(iter(test_dl), total=len(test_dl)):
+        x, y = batch
+        true_y.extend(y)
+        preds, probs = get_prediction(x, inference_model)
+        pred_y.extend(preds.cpu())
+    report = classification_report(true_y, pred_y, digits=3, output_dict=True)
+    wandb.log(report)
+
+
 if __name__ == "__main__":
-    main()
+    model_class = MobileNetV3MNIST
+    model = model_class()
+    # train(model)
+    inf_model = model_class.load_from_checkpoint(model.__class__.__name__ + ".pt", map_location="cpu")
+    inference(inf_model)
