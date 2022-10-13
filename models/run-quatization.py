@@ -1,3 +1,6 @@
+import os
+import sys
+
 import torch
 from uqmodels.resnet18.resnet18_mnist import ResNet18MNIST
 from uqmodels.observers import MinMaxObserver, PerChannelMinMaxObserver
@@ -15,8 +18,8 @@ class Quantize:
     def load_model(self):
         # todo: add other models
         if self.model == "resnet18":
-            self.uqmodel = ResNet18MNIST.load_from_checkpoint("uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
-            self.qmodel = ResNet18MNIST(quantize=True).load_from_checkpoint("uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
+            self.uqmodel = ResNet18MNIST.load_from_checkpoint("models/uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
+            self.qmodel = ResNet18MNIST(quantize=True).load_from_checkpoint("models/uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
 
     def config_static_quantization(self):
         if self.qscheme == "affine" and self.qloc == "tensor":
@@ -55,7 +58,11 @@ class Quantize:
 
 
 if __name__ == "__main__":
-    nqmodel = ResNet18MNIST.load_from_checkpoint("uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
+    arg_num = len(sys.argv)
+    for i in range(0, arg_num):
+        print("Param", i, "-", str(sys.argv[i]))
+
+    nqmodel = ResNet18MNIST.load_from_checkpoint("models/uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
 
     # possible models for resnet:
     m1 = ["static", "resnet18", torch.qint8,  "affine", "tensor"]
