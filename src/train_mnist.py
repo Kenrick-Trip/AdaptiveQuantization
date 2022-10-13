@@ -48,13 +48,13 @@ def inference(inference_model: pl.LightningModule):
         pred_y.extend(preds.cpu())
 
     wandb.log({"accuracy": accuracy_score(true_y, pred_y)})
-    print(classification_report(true_y, pred_y))
+    print(classification_report(true_y, pred_y, digits=3))
 
 
 if __name__ == "__main__":
     wandb.init(project="AdaptiveQuantization", entity="cbakos")
     model_class = MobileNetV3MNIST
     model = model_class()
-    train(model)
+    # train(model)
     inf_model = model_class.load_from_checkpoint(model.__class__.__name__ + ".pt", map_location="cpu")
     inference(inf_model)
