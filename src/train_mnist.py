@@ -5,7 +5,7 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 import pytorch_lightning as pl
 from tqdm.autonotebook import tqdm
-from sklearn.metrics import classification_report
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 from pytorch_lightning.loggers import WandbLogger
 
 from models.googlenet_mnist import GoogLeNetMNIST
@@ -47,13 +47,13 @@ def inference(inference_model: pl.LightningModule):
         true_y.extend(y)
         preds, probs = get_prediction(x, inference_model)
         pred_y.extend(preds.cpu())
-    report = classification_report(true_y, pred_y, digits=3, output_dict=True)
-    wandb.log(report)
+
+    wandb.log({"accuracy": accuracy_score(true_y, pred_y)})
 
 
 if __name__ == "__main__":
     model_class = MobileNetV3MNIST
     model = model_class()
-    # train(model)
+    train(model)
     inf_model = model_class.load_from_checkpoint(model.__class__.__name__ + ".pt", map_location="cpu")
     inference(inf_model)
