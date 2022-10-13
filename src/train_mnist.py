@@ -5,23 +5,29 @@ from torchvision.transforms import ToTensor
 import pytorch_lightning as pl
 from tqdm.autonotebook import tqdm
 from sklearn.metrics import classification_report
+from pytorch_lightning.loggers import WandbLogger
 
+from models.mobilenet_v3_mnist import MobileNetV3MNIST
 from models.resnet18_mnist import ResNet18MNIST
 
 
 def main():
+    batch_size = 32
     train_ds = MNIST("mnist", train=True, download=True, transform=ToTensor())
     test_ds = MNIST("mnist", train=False, download=True, transform=ToTensor())
 
-    train_dl = DataLoader(train_ds, batch_size=64, shuffle=True)
-    test_dl = DataLoader(test_ds, batch_size=64)
+    train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=4)
+    test_dl = DataLoader(test_ds, batch_size=batch_size, num_workers=4)
 
-    model = ResNet18MNIST()
+    model = MobileNetV3MNIST()
+
+    wlogger = WandbLogger()
 
     trainer = pl.Trainer(
         max_epochs=10,
         accelerator="gpu",
-        devices=[0]
+        devices=[0],
+        logger=wlogger
     )
 
     trainer.fit(model, train_dl)

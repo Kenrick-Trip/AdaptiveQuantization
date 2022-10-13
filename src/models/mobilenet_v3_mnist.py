@@ -1,15 +1,14 @@
 import pytorch_lightning as pl
 import torch
 from torch import nn
-from torchvision.models import resnet18
+from torchvision.models.mobilenet import mobilenet_v3_small
 
 
-class ResNet18MNIST(pl.LightningModule):
+class MobileNetV3MNIST(pl.LightningModule):
     def __init__(self):
         super().__init__()
-        self.model = resnet18(num_classes=10)
-        print(self.model)
-        self.model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+        self.model = mobilenet_v3_small(num_classes=10)
+        self.model.features[0][0] = nn.Conv2d(1, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
         self.loss = nn.CrossEntropyLoss()
         self.save_hyperparameters()
 
