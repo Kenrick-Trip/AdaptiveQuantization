@@ -50,6 +50,11 @@ class Quantize:
             model_fp32_prepared(input_fp32)
             return torch.quantization.convert(model_fp32_prepared)
 
+def write_results(filename):
+    f = open("/resultsets/" + filename + ".csv", "x")
+    f.write('testline!')
+    f.close()
+
 if __name__ == "__main__":
     no_q_model = torchvision.models.resnet18(pretrained=True, progress=True)
 
@@ -57,4 +62,5 @@ if __name__ == "__main__":
     data_types = [torch.qint8, torch.quint8, torch.qint32, torch.float16]
     # Quantize:
     model = Quantize(q_type[0], no_q_model, data_types[0]).run_quatiation()
+
     print(model)
