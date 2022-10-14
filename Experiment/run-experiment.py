@@ -13,7 +13,7 @@ def print_experiment_params():
     print("-------------")
 
 def write_results(result):
-    f = open("result-" + str(args[arg_cpu]) + "-" + str(args[arg_mem]) + ".csv")
+    f = open("/resultsets/result-" + str(args[arg_cpu]) + "-" + str(args[arg_mem]) + ".csv", "w")
     f.write("testline")
     f.close()
 
@@ -26,4 +26,4 @@ if __name__ == "__main__":
     param_cpu = sys.argv[arg_cpu]
     param_mem = sys.argv[arg_mem]
     print_experiment_params()
-    write_results()
+    write_results("None yet")
