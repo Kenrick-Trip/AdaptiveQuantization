@@ -56,38 +56,55 @@ class Quantize:
             torch.quantization.convert(self.qmodel, inplace=True)
             return self.qmodel
 
+    def save_model(self, filename):
+        model = self.run_quantization()
+        dir = "/resultsets/models/"
+
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        torch.save(model.state_dict(), os.path.join(dir, filename))
+
 
 if __name__ == "__main__":
+    dir = "/resultsets/models/"
+    if not os.path.exists(dir):
+        os.makedirs(dir)
 
-    nqmodel = ResNet18MNIST.load_from_checkpoint("uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
+    resnet_model = ResNet18MNIST.load_from_checkpoint("uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
+    torch.save(resnet_model.state_dict(), os.path.join(dir, "uq-resnet18"))
+
 
     # possible models for resnet:
-    m1 = ["static", "resnet18", torch.qint8,  "affine", "tensor"]
-    m2 = ["static", "resnet18", torch.qint8, "affine", "channel"]
-    m3 = ["static", "resnet18", torch.qint8, "symmetric", "tensor"]
-    m4 = ["static", "resnet18", torch.qint8, "symmetric", "channel"]
-    m5 = ["static", "resnet18", torch.quint8, "affine", "tensor"]
-    m6 = ["static", "resnet18", torch.quint8, "affine", "channel"]
-    m7 = ["static", "resnet18", torch.quint8, "symmetric", "tensor"]
-    m8 = ["static", "resnet18", torch.quint8, "symmetric", "channel"]
-    m9 = ["static", "resnet18", torch.qint8, "affine", "tensor"]
-    m10 = ["static", "resnet18", torch.qint8, "affine", "channel"]
-    m11 = ["static", "resnet18", torch.qint8, "symmetric", "tensor"]
-    m12 = ["static", "resnet18", torch.qint8, "symmetric", "channel"]
-    m13 = ["static", "resnet18", torch.quint8, "affine", "tensor"]
-    m14 = ["static", "resnet18", torch.quint8, "affine", "channel"]
-    m15 = ["static", "resnet18", torch.quint8, "symmetric", "tensor"]
-    m16 = ["static", "resnet18", torch.quint8, "symmetric", "channel"]
-    m17 = ["dynamic", "resnet18", torch.qint8, None, None]
-    m18 = ["dynamic", "resnet18", torch.float16, None, None]
+    models = [
+        # resnet models:
+        ["static", "resnet18", torch.qint8,  "affine", "tensor"],
+        ["static", "resnet18", torch.qint8, "affine", "channel"],
+        ["static", "resnet18", torch.qint8, "symmetric", "tensor"],
+        ["static", "resnet18", torch.qint8, "symmetric", "channel"],
+        ["static", "resnet18", torch.quint8, "affine", "tensor"],
+        ["static", "resnet18", torch.quint8, "affine", "channel"],
+        ["static", "resnet18", torch.quint8, "symmetric", "tensor"],
+        ["static", "resnet18", torch.quint8, "symmetric", "channel"],
+        ["static", "resnet18", torch.qint8, "affine", "tensor"],
+        ["static", "resnet18", torch.qint8, "affine", "channel"],
+        ["static", "resnet18", torch.qint8, "symmetric", "tensor"],
+        ["static", "resnet18", torch.qint8, "symmetric", "channel"],
+        ["static", "resnet18", torch.quint8, "affine", "tensor"],
+        ["static", "resnet18", torch.quint8, "affine", "channel"],
+        ["static", "resnet18", torch.quint8, "symmetric", "tensor"],
+        ["static", "resnet18", torch.quint8, "symmetric", "channel"],
+        ["dynamic", "resnet18", torch.qint8, None, None],
+        ["dynamic", "resnet18", torch.float16, None, None]
+    ]
 
-    ex = m7
+    for m in range(len(models)):
+        Quantize(models[m][0], models[m][1], models[m][2], models[m][3],
+                 models[m][4]).save_model("q-{}-{}".format(models[m][1], m))
 
-    qmodel = Quantize(ex[0], ex[1], ex[2], ex[3], ex[4]).run_quantization()
-    print(qmodel)
-
-    f = open("/resultsets/models/example.csv", "w")
-    f.write("testline")
-    f.close()
+    # todo: Jasper, what do we do with the lines below?
+    # f = open("/resultsets/models/example.csv", "w")
+    # f.write("testline")
+    # f.close()
 
     # todo: naming the model and saving
