@@ -61,9 +61,9 @@ class Experiment:
                     "/resultsets/models/resnet18-uq.pt".format(self.model_number), map_location="cpu")
             else:
                 self.model_size = os.path.getsize("/resultsets/models/resnet18-q-{}.pt".format(self.model_number))
-                return ResNet18MNIST(quantize=True).load_from_checkpoint(
-                    "/resultsets/models/resnet18-q-{}.pt".format(self.model_number), map_location="cpu")
-                # return torch.load("/resultsets/models/resnet18-q-{}.pt".format(self.model_number))
+                # return ResNet18MNIST(quantize=True).load(
+                #     "/resultsets/models/resnet18-q-{}.pt".format(self.model_number), map_location="cpu")
+                return torch.load("/resultsets/models/resnet18-q-{}.pt".format(self.model_number))
 
         # todo: add other models here ...
 
