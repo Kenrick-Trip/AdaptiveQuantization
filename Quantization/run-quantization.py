@@ -1,3 +1,6 @@
+import os
+import sys
+
 import torch
 from uqmodels.resnet18.resnet18_mnist import ResNet18MNIST
 from uqmodels.observers import MinMaxObserver, PerChannelMinMaxObserver
@@ -55,6 +58,7 @@ class Quantize:
 
 
 if __name__ == "__main__":
+
     nqmodel = ResNet18MNIST.load_from_checkpoint("uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
 
     # possible models for resnet:
