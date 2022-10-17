@@ -13,7 +13,7 @@ def print_experiment_params():
     print("-------------")
 
 def write_results(result):
-    f = open("/resultsets/result-" + str(args[arg_cpu]) + "-" + str(args[arg_mem]) + ".csv", "w")
+    f = open("/resultsets/experiments/result-" + str(args[arg_cpu]) + "-" + str(args[arg_mem]) + ".csv", "w")
     f.write("testline")
     f.close()
 

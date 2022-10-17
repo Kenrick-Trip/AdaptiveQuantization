@@ -86,4 +86,8 @@ if __name__ == "__main__":
     qmodel = Quantize(ex[0], ex[1], ex[2], ex[3], ex[4]).run_quantization()
     print(qmodel)
 
+    f = open("/resultsets/models/example.csv", "w")
+    f.write("testline")
+    f.close()
+
     # todo: naming the model and saving

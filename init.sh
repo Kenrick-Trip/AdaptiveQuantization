@@ -8,5 +8,5 @@ docker build Experiment -t quantizationtester
 echo "Finished building quantizationtester"
 
 echo "Running quantization"
-docker run -v quantresults:/resultsets quantizationrunner
+docker run -v 'quantresults:/resultsets' quantizationrunner
 echo "Finished running quantization"
