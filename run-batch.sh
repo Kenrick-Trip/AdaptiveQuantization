@@ -9,7 +9,7 @@ select modelname in resnet18 resnet19; do
 done
 
 for cpusiz in 1 2 3; do
-  for memsiz in 128MB 256MB 512MB; do
+  for memsiz in 1024MB 512MB; do
     for batchsiz in 1 2 3; do
       for quantlv in {0..18}; do
         echo "Running $modelname with cpu: $cpusiz, memory: $memsiz, batch size: $batchsiz and quant: $quantlv"

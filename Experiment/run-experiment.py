@@ -10,10 +10,13 @@ from torchvision.transforms import ToTensor
 from tqdm.autonotebook import tqdm
 from sklearn.metrics import accuracy_score
 
-# import all model classes
 from model_classes.resnet18_mnist import ResNet18MNIST
-from model_classes.googlenet_mnist import GoogLeNetMNIST
-from model_classes.mobilenet_v3_mnist import MobileNetV3MNIST
+
+
+# import all model classes
+# from model_classes.resnet18_mnist import ResNet18MNIST
+# from model_classes.googlenet_mnist import GoogLeNetMNIST
+# from model_classes.mobilenet_v3_mnist import MobileNetV3MNIST
 
 # def print_experiment_params():
 #     print("-------------")
@@ -51,15 +54,16 @@ class Experiment:
         return accuracy_score(true_y, pred_y)
 
     def load_model(self):
-
         if self.model == "resnet18":
-            self.model_size = os.path.getsize("/resultsets/models/resnet18-{}.pt".format(self.model_number))
             if self.model_number == 18:
+                self.model_size = os.path.getsize("/resultsets/models/resnet18-uq.pt".format(self.model_number))
                 return ResNet18MNIST.load_from_checkpoint(
                     "/resultsets/models/resnet18-uq.pt".format(self.model_number), map_location="cpu")
             else:
+                self.model_size = os.path.getsize("/resultsets/models/resnet18-q-{}.pt".format(self.model_number))
                 return ResNet18MNIST(quantize=True).load_from_checkpoint(
                     "/resultsets/models/resnet18-q-{}.pt".format(self.model_number), map_location="cpu")
+                # return torch.load("/resultsets/models/resnet18-q-{}.pt".format(self.model_number))
 
         # todo: add other models here ...
 
@@ -83,6 +87,7 @@ class Operators:
         self.arg_mem = 3
         self.arg_batch = 4
         self.arg_quant = 5
+        self.model_type = 1
 
         # log file settings:
         self.log_file = open("/resultsets/experiments/{}.csv".format(self.args[self.arg_modelname]), "w")
@@ -145,7 +150,7 @@ if __name__ == "__main__":
         os.makedirs(dir)
 
     Operators = Operators()
-    model_number = Operators.args[Operators.arg_quant]
+    model_number = int(Operators.args[Operators.arg_quant])
 
     # for e in range(num_models_per_type):
     # model_number = e
