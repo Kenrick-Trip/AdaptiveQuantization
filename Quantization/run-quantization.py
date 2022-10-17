@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     resnet_model = ResNet18MNIST.load_from_checkpoint("uqmodels/resnet18/resnet18_mnist.pt", map_location="cpu")
     # TODO Change to dynamic name
-    torch.save(resnet_model.state_dict(), os.path.join(dir, "resnet18-uq"))
+    torch.save(resnet_model.state_dict(), os.path.join(dir, "resnet18-uq.pt"))
 
 
     # possible models for resnet:
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     for m in range(len(models)):
         Quantize(models[m][0], models[m][1], models[m][2], models[m][3],
-                 models[m][4]).save_model("{}-q-{}".format(models[m][1], m))
+                 models[m][4]).save_model("{}-q-{}.pt".format(models[m][1], m))
 
     # todo: Jasper, what do we do with the lines below?
     # f = open("/resultsets/models/example.csv", "w")
