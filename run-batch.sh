@@ -1,8 +1,20 @@
-for cpusiz in 1 2 3;
-do
-  for memsiz in 128MB 256MB 512MB;
-  do
-    echo "Running models with cpu: $cpusiz and memory: $memsiz"
-    docker run -v quantresults:/resultsets --memory=$memsiz --rm quantizationtester $cpusiz $memsiz
+PS3="Enter a number: "
+select modelname in resnet18 resnet19; do
+  if test -z "$modelname"; then
+    echo "No model selected"
+  else
+    echo "Selected model: $modelname"
+    break
+  fi
+done
+
+for cpusiz in 1 2 3; do
+  for memsiz in 128MB 256MB 512MB; do
+    for batchsiz in 1 2 3; do
+      for quantlv in {0..18}; do
+        echo "Running $modelname with cpu: $cpusiz, memory: $memsiz, batch size: $batchsiz and quant: $quantlv"
+                docker run -v quantresults:/resultsets --memory=$memsiz --rm quantizationtester $modelname $cpusiz $memsiz $batchsiz $quantlv
+      done
+    done
   done
 done
