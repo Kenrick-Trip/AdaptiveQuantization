@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 .idea/
-src/lightning_logs
-src/mnist
-src/wandb
-src/checkpoints/*
+Train/lightning_logs
+Train/mnist
+Train/wandb
+Train/checkpoints/*
