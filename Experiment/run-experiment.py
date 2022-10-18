@@ -30,10 +30,11 @@ from model_classes.resnet18_mnist import ResNet18MNIST
 #     print("-------------")
 
 class Experiment:
-    def __init__(self, model, model_number, batch_size):
+    def __init__(self, model, model_number, batch_size, qtype):
         self.model = model
         self.model_number = model_number
         self.batch_size = batch_size
+        self.qtype = qtype
 
     def get_prediction(self, x):
         self.inference_model.freeze()  # prepares model for predicting
@@ -61,9 +62,12 @@ class Experiment:
                     "/resultsets/models/resnet18-uq.pt".format(self.model_number), map_location="cpu")
             else:
                 self.model_size = os.path.getsize("/resultsets/models/resnet18-q-{}.pt".format(self.model_number))
-                # return ResNet18MNIST(quantize=True).load(
-                #     "/resultsets/models/resnet18-q-{}.pt".format(self.model_number), map_location="cpu")
-                return torch.load("/resultsets/models/resnet18-q-{}.pt".format(self.model_number))
+                if self.qtype == "static":
+                    return ResNet18MNIST(quantize=True).load_state_dict(
+                        torch.load("/resultsets/models/resnet18-q-{}.pt".format(self.model_number)))
+                elif self.qtype == "dynamic":
+                    return ResNet18MNIST(quantize=True).load_state_dict(
+                        torch.load("/resultsets/models/resnet18-q-{}.pt".format(self.model_number)))
 
         # todo: add other models here ...
 
@@ -97,7 +101,6 @@ class Operators:
         self.writer.writerow(header)
 
         self.quantization_settings = [
-            ["None", "None", "None", "None"],
             ["static", "int8", "affine", "tensor"],
             ["static", "int8", "affine", "channel"],
             ["static", "int8", "symmetric", "tensor"],
@@ -139,6 +142,9 @@ class Operators:
 
         self.writer.writerow(data)
 
+    def quantization_type(self, model_number):
+        return str(self.quantization_settings[model_number][0])
+
     def exit(self):
         self.log_file.close()
 
@@ -156,7 +162,10 @@ if __name__ == "__main__":
     # model_number = e
     Operators.print_experiment_params(model_number)
 
-    exp = Experiment(Operators.args[Operators.arg_modelname], model_number, int(Operators.args[Operators.arg_batch]))
+    qtype = Operators.quantization_type(model_number)
+
+    exp = Experiment(Operators.args[Operators.arg_modelname], model_number,
+                     int(Operators.args[Operators.arg_batch]), qtype)
     accuracy, service_time, model_size = exp.run()
     Operators.write_results(accuracy, service_time, model_size)
 
