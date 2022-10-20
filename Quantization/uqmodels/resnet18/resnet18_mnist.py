@@ -7,21 +7,29 @@ from torch.quantization import QuantStub, DeQuantStub
 
 class ResNet18MNIST(pl.LightningModule):
     def __init__(self, quantize=False):
-        super().__init__()
-        self.model = resnet18(num_classes=10)
-        self.model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-        self.loss = nn.CrossEntropyLoss()
+        super(ResNet18MNIST, self).__init__()
+
         self.quantize = quantize
+
         if self.quantize:
             self.quant = QuantStub()
-            self.dequant = DeQuantStub()
+            self.model = resnet18(num_classes=10)
+            self.model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+            # self.dequant = DeQuantStub()
+            # self.model = uqmodel
+        else:
+            self.model = resnet18(num_classes=10)
+            self.model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+
+        self.loss = nn.CrossEntropyLoss()
 
     def forward(self, x):
         if self.quantize:
             x = self.quant(x)
-        x = self.model(x)
-        if self.quatize:
-            x = self.dequant(x)
+            x = self.model(x)
+            # x = self.dequant(x)
+        else:
+            x = self.model(x)
         return x
 
     def training_step(self, batch, batch_no):
