@@ -53,8 +53,8 @@ def inference(inference_model: pl.LightningModule):
 
 if __name__ == "__main__":
     wandb.init(project="AdaptiveQuantization", entity="cbakos")
-    model_class = MobileNetV3MNIST
+    model_class = GoogLeNetMNIST
     model = model_class()
-    # train(model)
+    train(model)
     inf_model = model_class.load_from_checkpoint("checkpoints/"+model.__class__.__name__ + ".pt", map_location="cpu")
     inference(inf_model)
