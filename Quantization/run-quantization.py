@@ -93,8 +93,8 @@ if __name__ == "__main__":
         ["resnet18", torch.float16],
         ["mobilenetv3", torch.qint8],
         ["mobilenetv3", torch.float16],
-        ["googlenet", torch.qint8],
-        ["googlenet", torch.float16],
+        # ["googlenet", torch.qint8],
+        # ["googlenet", torch.float16],
     ]
 
     for m in range(len(models)):
