@@ -331,10 +331,13 @@ def inference():
     # quantized_model = QuantizedResNet18(model_fp32=model)
     # Select quantization schemes from
     # https://pytorch.org/docs/stable/quantization-support.html
-    quantization_config = torch.quantization.get_default_qconfig("fbgemm")
+    # quantization_config = torch.quantization.get_default_qconfig("fbgemm")
     # Custom quantization configurations
     # quantization_config = torch.quantization.default_qconfig
-    # quantization_config = torch.quantization.QConfig(activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8), weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_symmetric))
+    quantization_config = torch.quantization.QConfig(
+        activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8),
+        weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_affine)
+    )
 
     quantized_model.qconfig = quantization_config
 

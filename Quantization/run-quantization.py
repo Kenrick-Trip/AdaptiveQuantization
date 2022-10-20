@@ -94,9 +94,7 @@ if __name__ == "__main__":
         ["static", "resnet18", torch.quint8, "affine", "tensor"],
         ["static", "resnet18", torch.quint8, "affine", "channel"],
         ["static", "resnet18", torch.quint8, "symmetric", "tensor"],
-        ["static", "resnet18", torch.quint8, "symmetric", "channel"],
-        ["dynamic", "resnet18", torch.qint8, None, None],
-        ["dynamic", "resnet18", torch.float16, None, None]
+        ["static", "resnet18", torch.quint8, "symmetric", "channel"]
     ]
 
     for m in range(len(models)):
