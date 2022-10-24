@@ -156,5 +156,5 @@ def inference():
 
 
 if __name__ == "__main__":
-    train(learning_rate=1e-2, num_epochs=10)
+    # train(learning_rate=1e-2, num_epochs=10)
     inference()
