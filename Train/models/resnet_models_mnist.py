@@ -1,4 +1,5 @@
-# Taken from: https://leimao.github.io/blog/PyTorch-Static-Quantization/
+# Adapted from: https://leimao.github.io/blog/PyTorch-Static-Quantization/
+# for MNIST
 from torchvision.models import resnet18
 import torch
 from torch import Tensor
