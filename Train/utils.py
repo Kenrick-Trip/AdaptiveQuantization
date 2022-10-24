@@ -31,7 +31,6 @@ def save_torchscript_model(model, model_dir, model_filename):
 
 def load_torchscript_model(model_filepath, device):
     model = torch.jit.load(model_filepath, map_location=device)
-
     return model
 
 
