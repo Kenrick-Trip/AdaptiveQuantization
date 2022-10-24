@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import copy
 
+from Train.train_resnet import train
 from Train.utils import measure_inference_latency, load_torchscript_model, evaluate_model, save_torchscript_model, \
     calibrate_model, load_model, set_random_seeds, prepare_dataloader, create_model
 
@@ -56,7 +57,7 @@ def create_fused_model(original_model):
     return fused_model
 
 
-def create_static_quantized_model(trained_original_model, train_loader):
+def create_static_quantized_model(trained_original_model, train_loader, dtype=torch.qint8, qscheme=torch.per_tensor_affine):
     fused_model = create_fused_model(original_model=trained_original_model)
     # Prepare the model for static quantization.
     quantized_model = QuantizedResNet(model_fp32=fused_model)
@@ -65,7 +66,7 @@ def create_static_quantized_model(trained_original_model, train_loader):
 
     quantization_config = torch.quantization.QConfig(
         activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
-        weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_affine)
+        weight=torch.quantization.MinMaxObserver.with_args(dtype=dtype, qscheme=qscheme)
     )
 
     quantized_model.qconfig = quantization_config
@@ -88,8 +89,7 @@ def create_static_quantized_model(trained_original_model, train_loader):
 def inference():
     random_seed = 0
     num_classes = 10
-    cuda_device = torch.device("cuda:0")
-    cpu_device = torch.device("cpu:0")
+    cpu_device = torch.device("cpu")
 
     model_dir = "saved_models"
     model_filename = "resnet18_mnist.pt"
@@ -105,9 +105,9 @@ def inference():
     # Create an untrained model.
     model = create_model(num_classes=num_classes)
     # Load a pretrained model.
-    model = load_model(model=model, model_filepath=model_filepath, device=cuda_device)
+    model = load_model(model=model, model_filepath=model_filepath, device=cpu_device)
 
-    model.to(cpu_device)
+    # model.to(cpu_device)
     quantized_model = create_static_quantized_model(trained_original_model=model, train_loader=train_loader)
 
     model.eval()
@@ -156,5 +156,5 @@ def inference():
 
 
 if __name__ == "__main__":
-    # train()
+    train(learning_rate=1e-2, num_epochs=10)
     inference()

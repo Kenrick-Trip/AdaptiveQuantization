@@ -7,7 +7,7 @@ from Train.utils import evaluate_model, set_random_seeds, create_model, prepare_
 
 def train(learning_rate,
           num_epochs,
-          device=torch.device("cuda:0"),
+          device=torch.device("cuda"),
           model_dir="saved_models",
           model_filename="resnet18_mnist.pt",
           seed=0):
@@ -18,7 +18,7 @@ def train(learning_rate,
     # Create an untrained model.
     model = create_model(num_classes=num_classes)
 
-    train_loader, test_loader = prepare_dataloader(num_workers=8, train_batch_size=128, eval_batch_size=256)
+    train_loader, test_loader = prepare_dataloader(num_workers=4, train_batch_size=128, eval_batch_size=256)
 
     # Train model.
     model = train_model(model=model,
