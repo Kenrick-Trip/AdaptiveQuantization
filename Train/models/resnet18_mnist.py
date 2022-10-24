@@ -1,7 +1,5 @@
+# Taken from: https://leimao.github.io/blog/PyTorch-Static-Quantization/
 from torchvision.models import resnet18
-
-# todo: for mnist: self.model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-
 import torch
 from torch import Tensor
 import torch.nn as nn

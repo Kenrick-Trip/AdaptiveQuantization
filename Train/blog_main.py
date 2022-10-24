@@ -1,3 +1,4 @@
+# Adapted from: https://leimao.github.io/blog/PyTorch-Static-Quantization/
 import os
 import random
 
@@ -81,9 +82,7 @@ def train_model(model, train_loader, test_loader, device):
 
     model.to(device)
 
-    # It seems that SGD optimizer is better than Adam optimizer for ResNet18 training on CIFAR10.
     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-5)
-    # optimizer = optim.Adam(model.parameters(), lr=learning_rate, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
     for epoch in range(num_epochs):
 
@@ -255,8 +254,8 @@ def train():
     cpu_device = torch.device("cpu:0")
 
     model_dir = "saved_models"
-    model_filename = "resnet18_cifar10.pt"
-    quantized_model_filename = "resnet18_quantized_cifar10.pt"
+    model_filename = "resnet18_mnist.pt"
+    quantized_model_filename = "resnet18_quantized_mnist.pt"
     model_filepath = os.path.join(model_dir, model_filename)
     quantized_model_filepath = os.path.join(model_dir, quantized_model_filename)
 
@@ -279,8 +278,8 @@ def inference():
     cpu_device = torch.device("cpu:0")
 
     model_dir = "saved_models"
-    model_filename = "resnet18_cifar10.pt"
-    quantized_model_filename = "resnet18_quantized_cifar10.pt"
+    model_filename = "resnet18_mnist.pt"
+    quantized_model_filename = "resnet18_quantized_mnist.pt"
     model_filepath = os.path.join(model_dir, model_filename)
     quantized_model_filepath = os.path.join(model_dir, quantized_model_filename)
 
@@ -335,7 +334,7 @@ def inference():
     # Custom quantization configurations
     # quantization_config = torch.quantization.default_qconfig
     quantization_config = torch.quantization.QConfig(
-        activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8),
+        activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
         weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_affine)
     )
 
