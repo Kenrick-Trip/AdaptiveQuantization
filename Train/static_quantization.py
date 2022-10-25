@@ -57,15 +57,16 @@ def create_fused_model(original_model):
     return fused_model
 
 
-def create_static_quantized_model(trained_original_model, train_loader, dtype=torch.qint8, qscheme=torch.per_tensor_affine):
+def create_static_quantized_model(trained_original_model, train_loader, dtype=torch.quint8, qscheme=torch.per_tensor_affine):
     fused_model = create_fused_model(original_model=trained_original_model)
     # Prepare the model for static quantization.
     quantized_model = QuantizedResNet(model_fp32=fused_model)
     # Using un-fused model will fail.
     # Because there is no quantized layer implementation for a single batch normalization layer.
 
+    # DO NOT change DTYPE
     quantization_config = torch.quantization.QConfig(
-        activation=torch.quantization.MinMaxObserver.with_args(dtype=dtype),
+        activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
         weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=qscheme)
     )
 

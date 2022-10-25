@@ -74,15 +74,16 @@ class Quantize:
         # Using un-fused model will fail.
         # Because there is no quantized layer implementation for a single batch normalization layer.
 
+        # DO NOT change DTYPE
         if self.qscheme == "affine":
             quantization_config = torch.quantization.QConfig(
-                activation=torch.quantization.MinMaxObserver.with_args(dtype=self.dtype),
+                activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
                 weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_affine)
             )
         elif self.qscheme == "symmetric":
             quantization_config = torch.quantization.QConfig(
-                activation=torch.quantization.MinMaxObserver.with_args(dtype=self.dtype),
-                weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_symmetric)
+                activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
+                weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.int8, qscheme=torch.per_tensor_symmetric)
             )
             # torch.quantization.qconfig.float16_static_qconfig
         else:
