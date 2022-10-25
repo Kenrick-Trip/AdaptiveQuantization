@@ -159,5 +159,5 @@ def inference(model_name):
 
 if __name__ == "__main__":
     model_name = "resnet34"
-    train(learning_rate=1e-2, num_epochs=10, model_name=model_name)
+    # train(learning_rate=1e-2, num_epochs=10, model_name=model_name)
     inference(model_name=model_name)
