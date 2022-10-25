@@ -2,6 +2,7 @@ import sys
 import torch
 import csv
 import os
+import time
 
 from Train.utils import measure_inference_latency, load_torchscript_model, evaluate_model, prepare_dataloader
 
@@ -29,10 +30,17 @@ class Experiment:
 
     def inference(self):
         model = self.load_model()
+
+        start_time = time.time()
         _, accuracy = evaluate_model(model=model, test_loader=self.test_loader, device=self.cpu_device,
                                      criterion=None)
-        service_time = measure_inference_latency(model=model, device=self.cpu_device,
-                                                 input_size=self.input_size, num_samples=10)
+        end_time = time.time()
+
+
+        # service_time = measure_inference_latency(model=model, device=self.cpu_device,
+        #                                         input_size=self.input_size, num_samples=10)
+        service_time = end_time - start_time
+        
         model_size = self.find_model_size(model)
 
         return accuracy, service_time, model_size
