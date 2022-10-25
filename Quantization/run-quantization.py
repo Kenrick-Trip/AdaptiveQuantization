@@ -39,8 +39,8 @@ class QuantizedResNet(nn.Module):
 
 class Quantize:
 
-    def __init__(self, model, qscheme, dir):
-        self.model = model
+    def __init__(self, model_name, qscheme, dir):
+        self.model_name = model_name
         self.qscheme = qscheme
         self.dir = dir
 
@@ -113,24 +113,17 @@ class Quantize:
         return quantized_model
 
     def load_model(self):
-        # Create an untrained model.
-        model = create_model(num_classes=self.num_classes, model_name=self.model)
-        # Load a pretrained model.
-        if self.model == "resnet18":
-            self.uqmodel = load_model(model=model, model_filepath="uqmodels/resnet18/resnet18_mnist.pt",
-                                      device=self.cpu_device)
-        elif self.model == "resnet34":
-            self.uqmodel = load_model(model=model, model_filepath="uqmodels/resnet34/resnet34_mnist.pt",
-                                      device=self.cpu_device)
+        path = "Train/saved_models/{}_mnist.pt".format(self.model_name)
+        model = create_model(num_classes=self.num_classes, model_name=self.model_name)
+        self.uqmodel = load_model(model=model, model_filepath=path, device=self.cpu_device)
+        return self.uqmodel
 
     def run_quantization(self):
         self.load_model()
         set_random_seeds(random_seed=self.random_seed)
-
         self.qmodel = self.create_static_quantized_model(trained_original_model=self.uqmodel,
                                                          train_loader=self.train_loader)
         self.qmodel.eval()
-
         return self.qmodel
 
     def save_quatized_model(self, filename):
@@ -159,9 +152,7 @@ class Quantize:
 
 if __name__ == "__main__":
     # Save accuracies for unquantized and quantized versions
-    model_names = ["resnet18"
-                   # , "resnet34"
-                   ]
+    model_names = ["resnet18", "resnet34"]
     accuracies = {k: {} for k in model_names}
     # possible quant schemes
     q_configs = ["histogram", "affine", "symmetric"]
