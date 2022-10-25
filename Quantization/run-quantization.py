@@ -37,9 +37,8 @@ class QuantizedResNet(nn.Module):
 
 class Quantize:
 
-    def __init__(self, model, dtype, qscheme):
+    def __init__(self, model, qscheme):
         self.model = model
-        self.dtype = dtype  # qint8 or qfloat16
         self.qscheme = qscheme
         self.dir = "/resultsets/models/"
 
@@ -75,24 +74,23 @@ class Quantize:
         # Because there is no quantized layer implementation for a single batch normalization layer.
 
         # DO NOT change DTYPE
-        if self.qscheme == "affine" and self.dtype == "int8":
+        if self.qscheme == "affine":
             quantization_config = torch.quantization.QConfig(
                 activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
                 weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_affine)
             )
-        elif self.qscheme == "symmetric" and self.dtype == "int8":
+        elif self.qscheme == "symmetric":
             quantization_config = torch.quantization.QConfig(
                 activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
                 weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_symmetric)
             )
-        elif self.dtype == "histogram":
+        elif self.qscheme == "histogram":
             quantization_config = torch.quantization.QConfig(
                 activation=torch.quantization.HistogramObserver.with_args(reduce_range=True),
                 weight=torch.quantization.HistogramObserver.with_args(reduce_range=True, dtype=torch.qint8)
             )
         else:
-            error = "wrong inputs for qscheme"
-            assert print(error)
+            raise "wrong inputs for qscheme"
 
         quantized_model.qconfig = quantization_config
 
@@ -141,7 +139,7 @@ class Quantize:
         # Save quantized model.
         save_torchscript_model(model=model, model_dir=self.dir, model_filename=filename)
 
-    def save_unquatized_model(self, filename):
+    def save_unquantized_model(self, filename):
         self.load_model()
 
         if not os.path.exists(self.dir):
@@ -153,18 +151,21 @@ class Quantize:
 
 if __name__ == "__main__":
     # save unquantized model as jit model:
-    Quantize("resnet18", None, None).save_unquatized_model("resnet18_jit_mnist.pt")
-    # todo: also put resnet34 here
+    Quantize("resnet18", None).save_unquantized_model("resnet18_jit_None_mnist.pt")
+    # Quantize("resnet34", None).save_unquantized_model("resnet34_jit_None_mnist.pt")
 
     # possible models for resnet:
-    models = [
+    model_q_configs = [
         # resnet18 models:
-        ["resnet18", "histogram", None],
-        ["resnet18", "int8",  "affine"],
-        ["resnet18", "int8", "symmetric"],
+        ["resnet18", "histogram"],
+        ["resnet18", "affine"],
+        ["resnet18", "symmetric"],
+        # ["resnet34", "histogram"],
+        # ["resnet34", "affine"],
+        # ["resnet34", "symmetric"],
     ]
 
-    for m in range(len(models)):
-        Quantize(models[m][0], models[m][1], models[m][2]).save_quatized_model(
-            "{}_jit_q_{}_mnist.pt".format(models[m][0], m)
+    for m in model_q_configs:
+        Quantize(m[0], m[1]).save_quatized_model(
+            "{}_jit_{}_mnist.pt".format(m[0], m[1])
         )

@@ -65,7 +65,7 @@ def model_equivalence(model_1, model_2, device, rtol=1e-05, atol=1e-08, num_test
 
 def measure_inference_latency(model,
                               device,
-                              input_size=(1, 1, 32, 32),
+                              input_size,
                               num_samples=100,
                               num_warmups=10):
     model.to(device)
@@ -76,18 +76,16 @@ def measure_inference_latency(model,
     with torch.no_grad():
         for _ in range(num_warmups):
             _ = model(x)
-    # torch.cuda.synchronize()
 
     with torch.no_grad():
         start_time = time.time()
         for _ in range(num_samples):
             _ = model(x)
-            # torch.cuda.synchronize()
         end_time = time.time()
     elapsed_time = end_time - start_time
     elapsed_time_ave = elapsed_time / num_samples
 
-    return elapsed_time_ave * 1000.0
+    return elapsed_time_ave * 1000.0  # get time in ms
 
 
 def calibrate_model(model, loader, device=torch.device("cpu:0")):
@@ -147,6 +145,7 @@ def prepare_dataloader(num_workers=8, train_batch_size=128, eval_batch_size=256)
         sampler=test_sampler, num_workers=num_workers)
 
     return train_loader, test_loader
+
 
 def prepare_testloader(num_workers=4, eval_batch_size=64):
     test_set = torchvision.datasets.MNIST(root="data", train=False, download=False, transform=ToTensor())
