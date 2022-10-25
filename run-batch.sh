@@ -1,5 +1,6 @@
 PS3="Enter a number: "
-select modelname in resnet18 resnet19; do
+
+select modelname in resnet18 resnet34; do
   if test -z "$modelname"; then
     echo "No model selected"
   else
