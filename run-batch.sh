@@ -13,7 +13,7 @@ for cpusiz in 1 2 3; do
     for batchsiz in 1 2 3; do
       for quantlv in {0..4}; do
         echo "Running $modelname with cpu: $cpusiz, memory: $memsiz, batch size: $batchsiz and quant: $quantlv"
-                docker run -v quantresults:/resultsets --memory=$memsiz --rm quantizationtester $modelname $cpusiz $memsiz $batchsiz $quantlv
+                docker run -v quantresults:/resultsets --memory=$memsiz --cpus=$cpusiz --rm quantizationtester $modelname $cpusiz $memsiz $batchsiz $quantlv
       done
     done
   done
