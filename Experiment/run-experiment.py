@@ -1,3 +1,4 @@
+import pickle
 import sys
 import torch
 import csv
@@ -9,14 +10,16 @@ from Train.utils import measure_inference_latency, load_torchscript_model, evalu
 
 class Experiment:
     def __init__(self, model_name, quant_setting, batch_size):
-        self.model = model_name
+        self.model_name = model_name
         self.quant_setting = quant_setting
         self.batch_size = batch_size
 
-        self.dir = "/resultsets/models"
+        self.dir = "/resultsets/models/"
         self.test_loader = prepare_testloader(num_workers=4, eval_batch_size=self.batch_size)
         self.input_size = (self.batch_size, 1, 32, 32)
         self.cpu_device = torch.device("cpu")
+        with open(self.dir+'accuracies.pickle', 'rb') as handle:
+            self.accuracies = pickle.load(handle)
 
     def find_model_size(self, model):
         # https://discuss.pytorch.org/t/finding-model-size/130275
@@ -27,24 +30,20 @@ class Experiment:
         for buffer in model.buffers():
             buffer_size += buffer.nelement() * buffer.element_size()
 
-        return (param_size + buffer_size) / (1024**2)   # in MB
+        size_all_mb = (param_size + buffer_size) / 1024 ** 2
+        return size_all_mb   # in MB
 
     def inference(self):
         model = self.load_model()
-        # accuracy = evaluate_model(model=model, test_loader=self.test_loader, device=self.cpu_device)
-
         service_time = measure_inference_latency(model=model, device=self.cpu_device,
                                                  input_size=self.input_size, num_samples=10)
-
         model_size = self.find_model_size(model)
-
-        accuracy = 0.0  # todo: we should compute this only once per model
-
+        accuracy = self.accuracies[self.model_name][self.quant_setting]
         return accuracy, service_time, model_size
 
     def load_model(self):
         return load_torchscript_model(
-            model_filepath="{}/{}_jit_{}_mnist.pt".format(self.dir, self.model, self.quant_setting),
+            model_filepath="{}{}_jit_{}_mnist.pt".format(self.dir, self.model_name, self.quant_setting),
             device=torch.device("cpu:0")
         )
 
@@ -87,12 +86,11 @@ class Operators:
             str(self.args[self.arg_batch]),
             str(self.args[self.arg_modelname]),
             str(self.arg_quant_setting),
-            # str(accuracy.item()),
             str(accuracy),
             str(service_time),
             str(model_size)
         ]
-        print(*data, sep=", ")
+        # print(*data, sep=", ")
         self.writer.writerow(data)
 
     def exit(self):

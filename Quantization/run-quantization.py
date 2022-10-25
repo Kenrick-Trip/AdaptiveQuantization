@@ -1,10 +1,12 @@
 import os
+import pickle
+
 import torch
 import torch.nn as nn
 import copy
 
 from Train.utils import save_torchscript_model, calibrate_model, load_model, set_random_seeds, prepare_dataloader, \
-    create_model
+    create_model, evaluate_model
 
 
 class QuantizedResNet(nn.Module):
@@ -37,15 +39,18 @@ class QuantizedResNet(nn.Module):
 
 class Quantize:
 
-    def __init__(self, model, qscheme):
+    def __init__(self, model, qscheme, dir):
         self.model = model
         self.qscheme = qscheme
-        self.dir = "/resultsets/models/"
+        self.dir = dir
 
         # settings:
         self.random_seed = 0
         self.num_classes = 10
         self.cpu_device = torch.device("cpu")
+        self.train_loader, self.test_loader = prepare_dataloader(num_workers=4,
+                                                                 train_batch_size=128,
+                                                                 eval_batch_size=128)
 
     def create_fused_model(self, original_model):
         fused_model = copy.deepcopy(original_model)
@@ -82,7 +87,8 @@ class Quantize:
         elif self.qscheme == "symmetric":
             quantization_config = torch.quantization.QConfig(
                 activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
-                weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_symmetric)
+                weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8,
+                                                                   qscheme=torch.per_tensor_symmetric)
             )
         elif self.qscheme == "histogram":
             quantization_config = torch.quantization.QConfig(
@@ -107,25 +113,22 @@ class Quantize:
         return quantized_model
 
     def load_model(self):
-        # todo: add other models
+        # Create an untrained model.
+        model = create_model(num_classes=self.num_classes, model_name=self.model)
+        # Load a pretrained model.
         if self.model == "resnet18":
-            # Create an untrained model.
-            model = create_model(num_classes=self.num_classes)
-            # Load a pretrained model.
             self.uqmodel = load_model(model=model, model_filepath="uqmodels/resnet18/resnet18_mnist.pt",
                                       device=self.cpu_device)
         elif self.model == "resnet34":
-            # Create an untrained model.
-            model = create_model(num_classes=self.num_classes)
-            # Load a pretrained model.
             self.uqmodel = load_model(model=model, model_filepath="uqmodels/resnet34/resnet34_mnist.pt",
                                       device=self.cpu_device)
 
     def run_quantization(self):
         self.load_model()
         set_random_seeds(random_seed=self.random_seed)
-        train_loader, test_loader = prepare_dataloader(num_workers=4, train_batch_size=128, eval_batch_size=32)
-        self.qmodel = self.create_static_quantized_model(trained_original_model=self.uqmodel, train_loader=train_loader)
+
+        self.qmodel = self.create_static_quantized_model(trained_original_model=self.uqmodel,
+                                                         train_loader=self.train_loader)
         self.qmodel.eval()
 
         return self.qmodel
@@ -138,6 +141,7 @@ class Quantize:
 
         # Save quantized model.
         save_torchscript_model(model=model, model_dir=self.dir, model_filename=filename)
+        return model
 
     def save_unquantized_model(self, filename):
         self.load_model()
@@ -148,24 +152,31 @@ class Quantize:
         # Save quantized model.
         save_torchscript_model(model=self.uqmodel, model_dir=self.dir, model_filename=filename)
 
+    def get_accuracy(self, model):
+        accuracy = evaluate_model(model=model, test_loader=self.test_loader, device=self.cpu_device)
+        return accuracy.item()
+
 
 if __name__ == "__main__":
-    # save unquantized model as jit model:
-    Quantize("resnet18", None).save_unquantized_model("resnet18_jit_None_mnist.pt")
-    # Quantize("resnet34", None).save_unquantized_model("resnet34_jit_None_mnist.pt")
+    # Save accuracies for unquantized and quantized versions
+    model_names = ["resnet18"
+                   # , "resnet34"
+                   ]
+    accuracies = {k: {} for k in model_names}
+    # possible quant schemes
+    q_configs = ["histogram", "affine", "symmetric"]
+    dir = "/resultsets/models/"
 
-    # possible models for resnet:
-    model_q_configs = [
-        # resnet18 models:
-        ["resnet18", "histogram"],
-        ["resnet18", "affine"],
-        ["resnet18", "symmetric"],
-        # ["resnet34", "histogram"],
-        # ["resnet34", "affine"],
-        # ["resnet34", "symmetric"],
-    ]
+    for m_name in model_names:
+        # save unquantized model as jit model:
+        uquant = Quantize(m_name, None, dir)
+        uquant.save_unquantized_model(m_name + "_jit_None_mnist.pt")
+        accuracies[m_name]["None"] = uquant.get_accuracy(uquant.uqmodel)
 
-    for m in model_q_configs:
-        Quantize(m[0], m[1]).save_quatized_model(
-            "{}_jit_{}_mnist.pt".format(m[0], m[1])
-        )
+        for scheme in q_configs:
+            quant = Quantize(m_name, scheme, dir)
+            model = quant.save_quatized_model("{}_jit_{}_mnist.pt".format(m_name, scheme))
+            accuracies[m_name][scheme] = quant.get_accuracy(model)
+
+    with open(dir+'accuracies.pickle', 'wb') as handle:
+        pickle.dump(accuracies, handle, protocol=pickle.HIGHEST_PROTOCOL)
