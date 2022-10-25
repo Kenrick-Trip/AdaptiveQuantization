@@ -7,16 +7,17 @@ from Train.utils import evaluate_model, set_random_seeds, create_model, prepare_
 
 def train(learning_rate,
           num_epochs,
+          model_name,
           device=torch.device("cuda"),
           model_dir="saved_models",
-          model_filename="resnet18_mnist.pt",
           seed=0):
+    model_filename = str(model_name) + "_mnist.pt",
     num_classes = 10  # MNIST
 
     set_random_seeds(random_seed=seed)
 
     # Create an untrained model.
-    model = create_model(num_classes=num_classes)
+    model = create_model(num_classes=num_classes, model_name=model_name)
 
     train_loader, test_loader = prepare_dataloader(num_workers=4, train_batch_size=128, eval_batch_size=256)
 
