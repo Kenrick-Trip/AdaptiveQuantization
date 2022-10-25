@@ -2,8 +2,9 @@ import sys
 import torch
 import csv
 import os
+import time
 
-from Train.utils import measure_inference_latency, load_torchscript_model, evaluate_model, prepare_dataloader
+from Train.utils import measure_inference_latency, load_torchscript_model, evaluate_model, prepare_testloader
 
 class Experiment:
     def __init__(self, model_name, model_number, batch_size):
@@ -12,7 +13,7 @@ class Experiment:
         self.batch_size = batch_size
 
         self.dir = "/resultsets/models"
-        _, self.test_loader = prepare_dataloader(num_workers=4, train_batch_size=128, eval_batch_size=self.batch_size)
+        self.test_loader = prepare_testloader(num_workers=4, eval_batch_size=self.batch_size)
         self.input_size = (1, 1, 32, 32)
         self.cpu_device = torch.device("cpu")
 
@@ -25,14 +26,15 @@ class Experiment:
         for buffer in model.buffers():
             buffer_size += buffer.nelement() * buffer.element_size()
 
-        return (param_size + buffer_size) / 1024 ** 2   # in MB
+        return (param_size + buffer_size) / (1024**2)   # in MB
 
     def inference(self):
         model = self.load_model()
-        _, accuracy = evaluate_model(model=model, test_loader=self.test_loader, device=self.cpu_device,
-                                     criterion=None)
+        accuracy = evaluate_model(model=model, test_loader=self.test_loader, device=self.cpu_device)
+
         service_time = measure_inference_latency(model=model, device=self.cpu_device,
                                                  input_size=self.input_size, num_samples=10)
+
         model_size = self.find_model_size(model)
 
         return accuracy, service_time, model_size
