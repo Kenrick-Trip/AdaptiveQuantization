@@ -21,31 +21,20 @@ class Experiment:
         with open(self.dir+'accuracies.pickle', 'rb') as handle:
             self.accuracies = pickle.load(handle)
 
-    def find_model_size(self, model):
-        # https://discuss.pytorch.org/t/finding-model-size/130275
-        param_size = 0
-        for param in model.parameters():
-            param_size += param.nelement() * param.element_size()
-        buffer_size = 0
-        for buffer in model.buffers():
-            buffer_size += buffer.nelement() * buffer.element_size()
-
-        size_all_mb = (param_size + buffer_size) / 1024 ** 2
-        return size_all_mb   # in MB
-
     def inference(self):
-        model = self.load_model()
+        model, model_size = self.load_model()
         service_time = measure_inference_latency(model=model, device=self.cpu_device,
                                                  input_size=self.input_size, num_samples=10)
-        model_size = self.find_model_size(model)
         accuracy = self.accuracies[self.model_name][self.quant_setting]
         return accuracy, service_time, model_size
 
     def load_model(self):
+        path = "{}{}_jit_{}_mnist.pt".format(self.dir, self.model_name, self.quant_setting)
+        model_size = os.path.getsize(path) / (1024**2)  # in MB
         return load_torchscript_model(
-            model_filepath="{}{}_jit_{}_mnist.pt".format(self.dir, self.model_name, self.quant_setting),
+            model_filepath=path,
             device=torch.device("cpu:0")
-        )
+        ), model_size
 
 
 class Operators:
@@ -90,7 +79,7 @@ class Operators:
             str(service_time),
             str(model_size)
         ]
-        # print(*data, sep=", ")
+        print(*data, sep=", ")
         self.writer.writerow(data)
 
     def exit(self):
