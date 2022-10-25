@@ -76,16 +76,21 @@ class Quantize:
 
         # DO NOT change DTYPE
         if self.qscheme == "affine":
+        if self.qscheme == "affine" and self.dtype == "int8":
             quantization_config = torch.quantization.QConfig(
                 activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
                 weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_affine)
             )
-        elif self.qscheme == "symmetric":
+        elif self.qscheme == "symmetric" and self.dtype == "int8":
             quantization_config = torch.quantization.QConfig(
                 activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
                 weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_symmetric)
             )
-            # torch.quantization.qconfig.float16_static_qconfig
+        elif self.dtype == "histogram":
+            quantization_config = torch.quantization.QConfig(
+                activation=torch.quantization.HistogramObserver.with_args(reduce_range=True),
+                weight=torch.quantization.HistogramObserver.with_args(reduce_range=True, dtype=torch.qint8)
+            )
         else:
             error = "wrong inputs for qscheme"
             assert print(error)
@@ -97,8 +102,9 @@ class Quantize:
 
         torch.quantization.prepare(quantized_model, inplace=True)
         # Use training data for calibration.
+
         calibrate_model(model=quantized_model, loader=train_loader, device=torch.device("cpu:0"))
-        quantized_model = torch.quantization.convert(quantized_model, inplace=True)
+        quantized_model = torch.quantization.convert(quantized_model, inplace=False)
         quantized_model.eval()
 
         return quantized_model
@@ -155,15 +161,9 @@ if __name__ == "__main__":
     # possible models for resnet:
     models = [
         # resnet18 models:
-        ["resnet18", torch.qint8,  "affine"],
-        ["resnet18", torch.qint8, "symmetric"],
-        ["resnet18", torch.quint8, "affine"],
-        ["resnet18", torch.quint8, "symmetric"],
-        # resnet34 models:
-        # ["resnet34", torch.qint8, "affine"],
-        # ["resnet34", torch.qint8, "symmetric"],
-        # ["resnet34", torch.quint8, "affine"],
-        # ["resnet34", torch.quint8, "symmetric"]
+        ["resnet18", "histogram", None],
+        ["resnet18", "int8",  "affine"],
+        ["resnet18", "int8", "symmetric"],
     ]
 
     for m in range(len(models)):
