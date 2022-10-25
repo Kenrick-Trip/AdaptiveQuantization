@@ -7,7 +7,7 @@ import torch
 import torchvision
 from torchvision.transforms import ToTensor
 
-from Train.models.resnet_models_mnist import resnet18
+from Train.models.resnet_models_mnist import resnet18, resnet34
 
 
 def save_model(model, model_dir, model_filename):
@@ -34,10 +34,15 @@ def load_torchscript_model(model_filepath, device):
     return model
 
 
-def create_model(num_classes=10):
+def create_model(num_classes=10, model_name="resnet18"):
     # The number of channels in ResNet18 is divisible by 8.
     # This is required for fast GEMM integer matrix multiplication.
-    model = resnet18(num_classes=num_classes, pretrained=False)
+    if model_name == "resnet18":
+        model = resnet18(num_classes=num_classes, pretrained=False)
+    elif model_name == "resnet34":
+        model = resnet34(num_classes=num_classes, pretrained=False)
+    else:
+        raise "Invalid model name"
     return model
 
 

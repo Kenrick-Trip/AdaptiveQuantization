@@ -87,15 +87,15 @@ def create_static_quantized_model(trained_original_model, train_loader, dtype=to
     return quantized_model
 
 
-def inference():
+def inference(model_name):
     random_seed = 0
     num_classes = 10
     cpu_device = torch.device("cpu")
 
     model_dir = "saved_models"
-    model_filename = "resnet18_mnist.pt"
-    jit_quantized_model_filename = "resnet18_jit_quantized_mnist.pt"
-    jit_model_filename = "resnet18_jit_mnist.pt"
+    model_filename = model_name+"_mnist.pt"
+    jit_quantized_model_filename = model_name+"_jit_quantized_mnist.pt"
+    jit_model_filename = model_name+"_jit_mnist.pt"
     model_filepath = os.path.join(model_dir, model_filename)
     jit_quantized_model_filepath = os.path.join(model_dir, jit_quantized_model_filename)
     jit_model_filepath = os.path.join(model_dir, jit_model_filename)
@@ -104,7 +104,7 @@ def inference():
     train_loader, test_loader = prepare_dataloader(num_workers=4, train_batch_size=128, eval_batch_size=32)
 
     # Create an untrained model.
-    model = create_model(num_classes=num_classes)
+    model = create_model(num_classes=num_classes, model_name=model_name)
 
     # Load a pretrained model.
     model = load_model(model=model, model_filepath=model_filepath, device=cpu_device)
@@ -158,5 +158,6 @@ def inference():
 
 
 if __name__ == "__main__":
-    # train(learning_rate=1e-2, num_epochs=10)
-    inference()
+    model_name = "resnet34"
+    # train(learning_rate=1e-2, num_epochs=10, model_name=model_name)
+    inference(model_name=model_name)
