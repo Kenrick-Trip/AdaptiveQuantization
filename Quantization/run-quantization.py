@@ -172,7 +172,7 @@ if __name__ == "__main__":
             quant = Quantize(m_name, scheme, dir)
             model = quant.save_quatized_model(path)
             accuracies[m_name][scheme] = quant.get_accuracy(model)
-            model_sizes[m_name]["None"] = os.path.getsize(path) / (1024 ** 2)  # in MB
+            model_sizes[m_name][scheme] = os.path.getsize(path) / (1024 ** 2)  # in MB
 
     with open(dir+'accuracies.pickle', 'wb') as handle:
         pickle.dump(accuracies, handle, protocol=pickle.HIGHEST_PROTOCOL)
