@@ -32,7 +32,7 @@ class Experiment:
         _, accuracy = evaluate_model(model=model, test_loader=self.test_loader, device=self.cpu_device,
                                      criterion=None)
         service_time = measure_inference_latency(model=model, device=self.cpu_device,
-                                                 input_size=self.input_size, num_samples=100)
+                                                 input_size=self.input_size, num_samples=10)
         model_size = self.find_model_size(model)
 
         return accuracy, service_time, model_size
