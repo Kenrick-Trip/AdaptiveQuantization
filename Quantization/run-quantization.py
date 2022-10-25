@@ -154,6 +154,7 @@ if __name__ == "__main__":
     # Save accuracies for unquantized and quantized versions
     model_names = ["resnet18", "resnet34"]
     accuracies = {k: {} for k in model_names}
+    model_sizes = {k: {} for k in model_names}
     # possible quant schemes
     q_configs = ["histogram", "affine", "symmetric"]
     dir = "/resultsets/models/"
@@ -161,13 +162,19 @@ if __name__ == "__main__":
     for m_name in model_names:
         # save unquantized model as jit model:
         uquant = Quantize(m_name, None, dir)
-        uquant.save_unquantized_model(m_name + "_jit_None_mnist.pt")
+        path = "{}{}_jit_None_mnist.pt".format(dir, m_name)
+        uquant.save_unquantized_model(path)
         accuracies[m_name]["None"] = uquant.get_accuracy(uquant.uqmodel)
+        model_sizes[m_name]["None"] = os.path.getsize(path) / (1024 ** 2)  # in MB
 
         for scheme in q_configs:
+            path = "{}{}_jit_{}_mnist.pt".format(dir, m_name, scheme)
             quant = Quantize(m_name, scheme, dir)
-            model = quant.save_quatized_model("{}_jit_{}_mnist.pt".format(m_name, scheme))
+            model = quant.save_quatized_model(path)
             accuracies[m_name][scheme] = quant.get_accuracy(model)
+            model_sizes[m_name]["None"] = os.path.getsize(path) / (1024 ** 2)  # in MB
 
     with open(dir+'accuracies.pickle', 'wb') as handle:
         pickle.dump(accuracies, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(dir + 'model_sizes.pickle', 'wb') as handle:
+        pickle.dump(model_sizes, handle, protocol=pickle.HIGHEST_PROTOCOL)

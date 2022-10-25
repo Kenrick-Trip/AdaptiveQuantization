@@ -20,21 +20,23 @@ class Experiment:
         self.cpu_device = torch.device("cpu")
         with open(self.dir+'accuracies.pickle', 'rb') as handle:
             self.accuracies = pickle.load(handle)
+        with open(self.dir+'model_sizes.pickle', 'rb') as handle:
+            self.model_sizes = pickle.load(handle)
 
     def inference(self):
-        model, model_size = self.load_model()
+        model = self.load_model()
         service_time = measure_inference_latency(model=model, device=self.cpu_device,
                                                  input_size=self.input_size, num_samples=10)
         accuracy = self.accuracies[self.model_name][self.quant_setting]
+        model_size = self.model_sizes[self.model_name][self.quant_setting]
         return accuracy, service_time, model_size
 
     def load_model(self):
         path = "{}{}_jit_{}_mnist.pt".format(self.dir, self.model_name, self.quant_setting)
-        model_size = os.path.getsize(path) / (1024**2)  # in MB
         return load_torchscript_model(
             model_filepath=path,
             device=torch.device("cpu:0")
-        ), model_size
+        )
 
 
 class Operators:
@@ -52,7 +54,8 @@ class Operators:
         self.arg_quant_setting = 5  # positive integer between 0 and 3 (0 is unquantized model)
 
         # log file settings:
-        self.log_file = open("/resultsets/experiments/{}.csv".format(self.args[self.arg_modelname]), "a")
+        self.log_file = \
+            open("/resultsets/experiments/experiment_data_{}.csv".format(time.strftime("%Y%m%d_%H%M%S")), "a")
 
         self.writer = csv.writer(self.log_file)
         header = ["CPU", "Memory", "Batch size", "Model name",
