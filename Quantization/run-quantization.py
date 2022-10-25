@@ -41,7 +41,7 @@ class Quantize:
         self.model = model
         self.dtype = dtype  # qint8 or qfloat16
         self.qscheme = qscheme
-        self.dir = "./resultsets/models/"
+        self.dir = "/resultsets/models/"
 
         # settings:
         self.random_seed = 0

@@ -5,13 +5,24 @@ import os
 
 from Train.utils import measure_inference_latency, load_torchscript_model, evaluate_model, prepare_dataloader
 
+# def print_experiment_params():
+#     print("-------------")
+#     print("Running experiment with:")
+#     print("Model name  :", args[arg_modelname])
+#     print("Cpu num     :", args[arg_cpu])
+#     print("Mem size    :", args[arg_mem])
+#     print("Batch size  :", args[arg_batch])
+#     print("Quant lv    :", args[arg_quant])
+#     print("Path        :", get_model_path())
+#     print("-------------")
+
 class Experiment:
     def __init__(self, model_name, model_number, batch_size):
         self.model = model_name
         self.model_number = model_number
         self.batch_size = batch_size
 
-        self.dir = "resultsets/models"
+        self.dir = "/resultsets/models/"
         _, self.test_loader = prepare_dataloader(num_workers=4, train_batch_size=128, eval_batch_size=self.batch_size)
         self.input_size = (1, 1, 32, 32)
         self.cpu_device = torch.device("cpu")
@@ -109,7 +120,7 @@ class Operators:
 
 
 if __name__ == "__main__":
-    dir = "resultsets/experiments/"
+    dir = "/resultsets/experiments/"
     if not os.path.exists(dir):
         os.makedirs(dir)
 
