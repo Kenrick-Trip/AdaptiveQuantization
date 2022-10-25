@@ -6,10 +6,11 @@ import time
 
 from Train.utils import measure_inference_latency, load_torchscript_model, evaluate_model, prepare_testloader
 
+
 class Experiment:
-    def __init__(self, model_name, model_number, batch_size):
+    def __init__(self, model_name, quant_setting, batch_size):
         self.model = model_name
-        self.model_number = model_number
+        self.quant_setting = quant_setting
         self.batch_size = batch_size
 
         self.dir = "/resultsets/models"
@@ -40,14 +41,14 @@ class Experiment:
         return accuracy, service_time, model_size
 
     def load_model(self):
-        if self.model_number == 4:
+        if self.quant_setting == 4:
             return load_torchscript_model(
                 model_filepath="{}/{}_jit_mnist.pt".format(self.dir, self.model),
                 device=torch.device("cpu:0")
             )
         else:
             return load_torchscript_model(
-                model_filepath="{}/{}_jit_q_{}_mnist.pt".format(self.dir, self.model, self.model_number),
+                model_filepath="{}/{}_jit_q_{}_mnist.pt".format(self.dir, self.model, self.quant_setting),
                 device=torch.device("cpu:0")
             )
 
@@ -60,11 +61,11 @@ class Operators:
         # argument parsing:
         self.args = sys.argv
         self.required_args = 6  # Should be the number of required parameters + 1
-        self.arg_modelname = 1 # resnet18 or resnet34
+        self.arg_modelname = 1  # resnet18 or resnet34
         self.arg_cpu = 2
         self.arg_mem = 3
-        self.arg_batch = 4 # positive integer
-        self.arg_quant_setting = 5 # positive integer between 0 and 4 (0 is unquantized model)
+        self.arg_batch = 4  # positive integer
+        self.arg_quant_setting = 5  # positive integer between 0 and 4 (0 is unquantized model)
 
         # log file settings:
         self.log_file = open("/resultsets/experiments/{}.csv".format(self.args[self.arg_modelname]), "a")
@@ -105,7 +106,7 @@ class Operators:
             str(service_time),
             str(model_size)
         ]
-        print(*data, sep = ", ")
+        print(*data, sep=", ")
         self.writer.writerow(data)
 
     def quatization_setting_number(self):
