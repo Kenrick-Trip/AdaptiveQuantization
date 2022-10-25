@@ -8,7 +8,6 @@ echo "Building quantizationtester"
 #docker build Experiment -t quantizationtester
 docker build -t quantizationtester -f Experiment/Dockerfile .
 echo "Finished building quantizationtester"
-
 echo "Running quantization"
 docker run -v 'quantresults:/resultsets' quantizationrunner
 echo "Finished running quantization"

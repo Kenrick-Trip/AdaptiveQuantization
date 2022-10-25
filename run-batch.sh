@@ -7,7 +7,6 @@ select modelname in resnet18 resnet19; do
     break
   fi
 done
-
 for cpusiz in 4 5 6; do
   for memsiz in 1024MB 512MB; do
     for batchsiz in 1 2 3; do

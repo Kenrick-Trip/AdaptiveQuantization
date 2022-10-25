@@ -75,7 +75,6 @@ class Quantize:
         # Because there is no quantized layer implementation for a single batch normalization layer.
 
         # DO NOT change DTYPE
-        if self.qscheme == "affine":
         if self.qscheme == "affine" and self.dtype == "int8":
             quantization_config = torch.quantization.QConfig(
                 activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
@@ -123,7 +122,6 @@ class Quantize:
             # Load a pretrained model.
             self.uqmodel = load_model(model=model, model_filepath="uqmodels/resnet34/resnet34_mnist.pt",
                                       device=self.cpu_device)
-
 
     def run_quantization(self):
         self.load_model()
