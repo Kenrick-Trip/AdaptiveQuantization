@@ -95,11 +95,10 @@ def calibrate_model(model, loader, device=torch.device("cpu:0")):
         _ = model(inputs)
 
 
-def evaluate_model(model, test_loader, device, criterion=None):
+def evaluate_model(model, test_loader, device):
     model.eval()
     model.to(device)
 
-    running_loss = 0
     running_corrects = 0
 
     for inputs, labels in test_loader:
@@ -110,19 +109,11 @@ def evaluate_model(model, test_loader, device, criterion=None):
         outputs = model(inputs)
         _, preds = torch.max(outputs, 1)
 
-        if criterion is not None:
-            loss = criterion(outputs, labels).item()
-        else:
-            loss = 0
-
-        # statistics
-        running_loss += loss * inputs.size(0)
         running_corrects += torch.sum(preds == labels.data)
 
-    eval_loss = running_loss / len(test_loader.dataset)
     eval_accuracy = running_corrects / len(test_loader.dataset)
 
-    return eval_loss, eval_accuracy
+    return eval_accuracy
 
 
 def set_random_seeds(random_seed=0):
@@ -152,3 +143,12 @@ def prepare_dataloader(num_workers=8, train_batch_size=128, eval_batch_size=256)
 
     return train_loader, test_loader
 
+def prepare_testloader(num_workers=4, eval_batch_size=64):
+    test_set = torchvision.datasets.MNIST(root="data", train=False, download=False, transform=ToTensor())
+    test_sampler = torch.utils.data.SequentialSampler(test_set)
+
+    test_loader = torch.utils.data.DataLoader(
+        dataset=test_set, batch_size=eval_batch_size,
+        sampler=test_sampler, num_workers=num_workers)
+
+    return test_loader
