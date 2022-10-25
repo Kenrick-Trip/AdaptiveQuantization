@@ -83,7 +83,7 @@ class Quantize:
         elif self.qscheme == "symmetric":
             quantization_config = torch.quantization.QConfig(
                 activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
-                weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.int8, qscheme=torch.per_tensor_symmetric)
+                weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_symmetric)
             )
             # torch.quantization.qconfig.float16_static_qconfig
         else:

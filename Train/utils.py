@@ -71,18 +71,18 @@ def measure_inference_latency(model,
     with torch.no_grad():
         for _ in range(num_warmups):
             _ = model(x)
-    torch.cuda.synchronize()
+    # torch.cuda.synchronize()
 
     with torch.no_grad():
         start_time = time.time()
         for _ in range(num_samples):
             _ = model(x)
-            torch.cuda.synchronize()
+            # torch.cuda.synchronize()
         end_time = time.time()
     elapsed_time = end_time - start_time
     elapsed_time_ave = elapsed_time / num_samples
 
-    return elapsed_time_ave
+    return elapsed_time_ave * 1000.0
 
 
 def calibrate_model(model, loader, device=torch.device("cpu:0")):
@@ -134,10 +134,10 @@ def set_random_seeds(random_seed=0):
 
 
 def prepare_dataloader(num_workers=8, train_batch_size=128, eval_batch_size=256):
-    train_set = torchvision.datasets.MNIST(root="data", train=True, download=True, transform=ToTensor())
+    train_set = torchvision.datasets.MNIST(root="data", train=True, download=False, transform=ToTensor())
     # We will use test set for validation and test in this project.
     # Do not use test set for validation in practice!
-    test_set = torchvision.datasets.MNIST(root="data", train=False, download=True, transform=ToTensor())
+    test_set = torchvision.datasets.MNIST(root="data", train=False, download=False, transform=ToTensor())
 
     train_sampler = torch.utils.data.RandomSampler(train_set)
     test_sampler = torch.utils.data.SequentialSampler(test_set)

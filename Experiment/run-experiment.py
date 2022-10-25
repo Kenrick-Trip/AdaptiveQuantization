@@ -38,7 +38,7 @@ class Experiment:
         return accuracy, service_time, model_size
 
     def load_model(self):
-        if self.model_number == 0:
+        if self.model_number == 4:
             return load_torchscript_model(
                 model_filepath="{}/{}_jit_mnist.pt".format(self.dir, self.model),
                 device=torch.device("cpu:0")
@@ -65,18 +65,19 @@ class Operators:
         self.arg_quant_setting = 5 # positive integer between 0 and 4 (0 is unquantized model)
 
         # log file settings:
-        self.log_file = open("/resultsets/experiments/{}.csv".format(self.args[self.arg_modelname]), "w")
+        self.log_file = open("/resultsets/experiments/{}.csv".format(self.args[self.arg_modelname]), "a")
+
         self.writer = csv.writer(self.log_file)
         header = ["CPU", "Memory", "Batch size", "Model name", "Data type",
                   "Quantization scheme", "Accuracy (%)", "Service time (ms)", "Size (bytes)"]
-        self.writer.writerow(header)
+        # self.writer.writerow(header)
 
         self.quantization_settings = [
-            ["None", "None"],
             ["int8", "affine"],
             ["int8", "symmetric"],
             ["uint8", "affine"],
-            ["uint8", "symmetric"]
+            ["uint8", "symmetric"],
+            ["None", "None"]
         ]
 
     def print_experiment_params(self):
@@ -98,10 +99,11 @@ class Operators:
             str(self.args[self.arg_modelname]),
             str(self.quantization_settings[int(self.args[self.arg_quant_setting])][0]),
             str(self.quantization_settings[int(self.args[self.arg_quant_setting])][1]),
-            str(accuracy),
+            str(accuracy.item()),
             str(service_time),
             str(model_size)
         ]
+        print(*data, sep = ", ")
         self.writer.writerow(data)
 
     def quatization_setting_number(self):
