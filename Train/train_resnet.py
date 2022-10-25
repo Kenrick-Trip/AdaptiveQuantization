@@ -11,7 +11,7 @@ def train(learning_rate,
           device=torch.device("cuda"),
           model_dir="saved_models",
           seed=0):
-    model_filename = str(model_name) + "_mnist.pt",
+    model_filename = model_name + "_mnist.pt"
     num_classes = 10  # MNIST
 
     set_random_seeds(random_seed=seed)
