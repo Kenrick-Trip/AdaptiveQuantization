@@ -65,8 +65,8 @@ def create_static_quantized_model(trained_original_model, train_loader, dtype=to
     # Because there is no quantized layer implementation for a single batch normalization layer.
 
     quantization_config = torch.quantization.QConfig(
-        activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
-        weight=torch.quantization.MinMaxObserver.with_args(dtype=dtype, qscheme=qscheme)
+        activation=torch.quantization.MinMaxObserver.with_args(dtype=dtype),
+        weight=torch.quantization.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=qscheme)
     )
 
     quantized_model.qconfig = quantization_config
@@ -104,6 +104,7 @@ def inference():
 
     # Create an untrained model.
     model = create_model(num_classes=num_classes)
+
     # Load a pretrained model.
     model = load_model(model=model, model_filepath=model_filepath, device=cpu_device)
 
