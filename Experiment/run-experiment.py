@@ -55,7 +55,7 @@ class Operators:
 
         # log file settings:
         self.log_file = \
-            open("/resultsets/experiments/experiment_data_{}.csv".format(time.strftime("%Y%m%d_%H%M%S")), "a")
+            open("/resultsets/experiments/experiment_data.csv", "a")
 
         self.writer = csv.writer(self.log_file)
         header = ["CPU", "Memory", "Batch size", "Model name",
@@ -77,7 +77,7 @@ class Operators:
             str(self.args[self.arg_mem]),
             str(self.args[self.arg_batch]),
             str(self.args[self.arg_modelname]),
-            str(self.arg_quant_setting),
+            str(self.args[self.arg_quant_setting]),
             str(accuracy),
             str(service_time),
             str(model_size)
