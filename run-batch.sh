@@ -8,7 +8,7 @@ select modelname in resnet18 resnet19; do
   fi
 done
 
-for cpusiz in 1 2 3; do
+for cpusiz in 4 5 6; do
   for memsiz in 1024MB 512MB; do
     for batchsiz in 1 2 3; do
       for quantlv in {0..4}; do
