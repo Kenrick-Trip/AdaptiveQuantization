@@ -5,17 +5,18 @@ from statsmodels.formula.api import ols
 pd.set_option('display.max_columns', 500)
 
 
-def main():
+def regression_without_interaction():
     df = pd.read_csv("experiment_data.csv", header=None)
     df.columns = ["cpu", "memory", "batch_size", "model_name",
                   "quant_scheme", "accuracy", "inference_time", "model_size_mb"]
-    fitted = ols(
-        "inference_time ~ C(quant_scheme) + C(model_name) + C(cpu) + C(cpu)*C(model_name)*C(quant_scheme)",
+    model = ols(
+        "inference_time ~ C(cpu) + C(memory) + C(batch_size) + C(model_name) + C(quant_scheme)",
         data=df).fit()
 
-    table = sm.stats.anova_lm(fitted)
+    table = sm.stats.anova_lm(model)
     print(table)
+    print(model.summary())
 
 
 if __name__ == "__main__":
-    main()
+    regression_without_interaction()
