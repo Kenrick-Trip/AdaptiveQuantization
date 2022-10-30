@@ -65,12 +65,12 @@ def visualize_prediction_errors(y_pred, y_true, file_name_to_save="regression_pr
 
 
 def load_experiment_data():
-    hws = [1, 2, 3]
-    reps = [1, 2, 3]
+    hws = [1]
+    reps = [1, 2]
     combined_df = None
     for hw in hws:
         for rep in reps:
-            df = pd.read_csv("hw{}_r{}_experiment_data.csv".format(hw, rep), header=None)
+            df = pd.read_csv("data/hw{}_r{}_experiment_data.csv".format(hw, rep), header=None)
             df.columns = ["cpu", "memory", "batch_size", "model_name", "quant_scheme", "accuracy", "inference_time",
                           "model_size_mb"]
             df["hardware"] = hw
@@ -78,7 +78,7 @@ def load_experiment_data():
             if combined_df is None:
                 combined_df = df
             else:
-                combined_df.append(df)
+                combined_df = combined_df.append(df)
     return combined_df
 
 
