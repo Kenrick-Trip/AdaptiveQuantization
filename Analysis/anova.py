@@ -54,7 +54,7 @@ def get_true_and_pred(dataframe, model):
     return y_pred, y_true
 
 
-def visualize_prediction_errors(y_pred, y_true, file_name_to_save="regression_prediction_error.png"):
+def visualize_prediction_errors(y_pred, y_true, file_name_to_save="plots/regression_prediction_error.png"):
     diff = y_true - y_pred
     diff.hist(bins=40)
     plt.title('Histogram of prediction errors')
@@ -66,7 +66,7 @@ def visualize_prediction_errors(y_pred, y_true, file_name_to_save="regression_pr
 
 def load_experiment_data():
     hws = [1]
-    reps = [1, 2]
+    reps = [1, 2, 3]
     combined_df = None
     for hw in hws:
         for rep in reps:
