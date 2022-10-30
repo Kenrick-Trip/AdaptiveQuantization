@@ -45,7 +45,7 @@ def predict_inference_time(regression_model, X):
     return y_pred
 
 
-def compare_true_and_pred(dataframe, model):
+def get_true_and_pred(dataframe, model):
     dataframe["predicted_inf_time"] = \
         predict_inference_time(model, dataframe[["cpu", "memory", "batch_size", "model_name", "quant_scheme"]])
     dataframe.sort_values(axis=0, by=["inference_time"])
@@ -54,22 +54,38 @@ def compare_true_and_pred(dataframe, model):
     return y_pred, y_true
 
 
-def visualize_prediction_errors(y_pred, y_true):
+def visualize_prediction_errors(y_pred, y_true, file_name_to_save="regression_prediction_error.png"):
     diff = y_true - y_pred
     diff.hist(bins=40)
     plt.title('Histogram of prediction errors')
     plt.xlabel('Inference time (ms) prediction error')
     plt.ylabel('Frequency')
-    plt.savefig("regression_prediction_error.png")
+    plt.savefig(file_name_to_save)
     plt.show()
 
 
+def load_experiment_data():
+    hws = [1, 2, 3]
+    reps = [1, 2, 3]
+    combined_df = None
+    for hw in hws:
+        for rep in reps:
+            df = pd.read_csv("hw{}_r{}_experiment_data.csv".format(hw, rep), header=None)
+            df.columns = ["cpu", "memory", "batch_size", "model_name", "quant_scheme", "accuracy", "inference_time",
+                          "model_size_mb"]
+            df["hardware"] = hw
+            df["repetition"] = rep
+            if combined_df is None:
+                combined_df = df
+            else:
+                combined_df.append(df)
+    return combined_df
+
+
 if __name__ == "__main__":
-    df = pd.read_csv("experiment_data.csv", header=None)
-    df.columns = ["cpu", "memory", "batch_size", "model_name",
-                  "quant_scheme", "accuracy", "inference_time", "model_size_mb"]
+    df = load_experiment_data()
     model = regression_without_interaction(df)
     # model = regression_with_pairwise_interactions(df)
-    y_pred, y_true = compare_true_and_pred(df, model)
+    y_pred, y_true = get_true_and_pred(df, model)
     visualize_prediction_errors(y_pred, y_true)
 
