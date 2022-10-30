@@ -78,7 +78,7 @@ def load_experiment_data():
             if combined_df is None:
                 combined_df = df
             else:
-                combined_df = combined_df.append(df)
+                combined_df = pd.concat((combined_df, df))
     return combined_df
 
 
