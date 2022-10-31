@@ -40,6 +40,7 @@ def run_with_and_without_tuning(regr_train_func, tune_func, data):
     y_pred = get_predictions(regr, X_test)
     default_score = r2_score(y_true=y_test, y_pred=y_pred)
     tuned_score = None
+    visualize_prediction_errors(y_pred, y_test, finetuned=False, model_name=regr_train_func.__name__)
 
     # find better hyper parameters, get r2_score for regressor trained with these params
     if tune_func is not None:
@@ -47,6 +48,8 @@ def run_with_and_without_tuning(regr_train_func, tune_func, data):
         regr = regr_train_func(X_train=X_train, y_train=y_train, **best)
         y_pred = get_predictions(regr, X_test)
         tuned_score = r2_score(y_true=y_test, y_pred=y_pred)
+        visualize_prediction_errors(y_pred, y_test, finetuned=True, model_name=regr_train_func.__name__)
+
     return default_score, tuned_score
 
 
@@ -56,10 +59,8 @@ if __name__ == "__main__":
     ohe = OneHotEncoder()
     ohe_X = ohe.fit_transform(X)
     data = train_test_split(ohe_X, y, random_state=1)
-    regr_train_funcs = [linear_regression, elastic_net, mlp_regression]
-    tune_funcs = [None, tune_elastic_net, tune_mlp]
+    regr_train_funcs = [elastic_net, mlp_regression]
+    tune_funcs = [tune_elastic_net, tune_mlp]
     for regr_train_func, tune_func in zip(regr_train_funcs, tune_funcs):
         default_score, tuned_score = run_with_and_without_tuning(regr_train_func, tune_func, data)
         print("{} default and tuned r_scores: {}, {}".format(regr_train_func.__name__, default_score, tuned_score))
-
-    # visualize_prediction_errors(y_pred, y_test, file_name_to_save="plots/mlp_prediction_error.png")

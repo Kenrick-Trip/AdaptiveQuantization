@@ -69,14 +69,20 @@ def get_true_and_pred(dataframe, model):
     return y_pred, y_true
 
 
-def visualize_prediction_errors(y_pred, y_true, file_name_to_save="plots/regression_prediction_error.png"):
+def visualize_prediction_errors(y_pred, y_true, model_name, finetuned):
     diff = y_true - y_pred
-    print(r2_score(y_true=y_true, y_pred=y_pred))
+    score = float(r2_score(y_true=y_true, y_pred=y_pred))
     diff.hist(bins=40)
-    plt.title('Histogram of prediction errors')
+    main_title_string = "Histogram of prediction errors for"
+    if finetuned is None:
+        plt.title('{} \n {}, R^2 score: {:5.3f}'.format(main_title_string, model_name, score))
+    elif finetuned:
+        plt.title('{} {} \n with hyper-parameter optimization, R^2 score: {:5.3f}'.format(main_title_string, model_name, score))
+    elif not finetuned:
+        plt.title('{} {} \n without hyper-parameter optimization, R^2 score: {:5.3f}'.format(main_title_string, model_name, score))
     plt.xlabel('Inference time (ms) prediction error')
     plt.ylabel('Frequency')
-    plt.savefig(file_name_to_save)
+    plt.savefig("plots/{} prediction error finetune {}.png".format(model_name, finetuned))
     plt.show()
 
 
@@ -112,8 +118,14 @@ if __name__ == "__main__":
     regr_train_data["inference_time"] = y_train
     regr_test_data = X_test
     regr_test_data["inference_time"] = y_test
+
+    # Model 1
     model = regression_without_interaction(df)
-    # model = regression_with_pairwise_interactions(regr_train_data)
     y_pred, y_true = get_true_and_pred(regr_test_data, model)
-    visualize_prediction_errors(y_pred, y_true)
+    visualize_prediction_errors(y_pred, y_true, finetuned=None, model_name="regression without interaction")
+
+    # Model 2
+    model = regression_with_pairwise_interactions(regr_train_data)
+    y_pred, y_true = get_true_and_pred(regr_test_data, model)
+    visualize_prediction_errors(y_pred, y_true, finetuned=None, model_name="regression with pairwise interaction")
 
