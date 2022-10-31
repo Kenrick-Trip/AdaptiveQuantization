@@ -12,7 +12,7 @@ pd.set_option('display.max_columns', 500)
 
 def regression_without_interaction(data):
     model = ols(
-        "inference_time ~ C(cpu) + C(memory) + C(batch_size) + C(model_name) + C(quant_scheme) + C(hardware)",
+        "inference_time ~ C(cpu) + C(memory) + C(batch_size) + C(model_name) + C(quant_scheme) + C(processor)",
         data=data).fit()
 
     table = sm.stats.anova_lm(model)
@@ -29,22 +29,22 @@ def regression_with_pairwise_interactions(data):
         C(batch_size) + \
         C(model_name) + \
         C(quant_scheme) + \
-        C(hardware) +\
+        C(processor) +\
         C(cpu) * C(memory) + \
         C(cpu) * C(batch_size) + \
         C(cpu) *  C(model_name) + \
         C(cpu) *  C(quant_scheme) + \
-        C(cpu) *  C(hardware) + \
+        C(cpu) *  C(processor) + \
         C(memory) * C(batch_size) + \
         C(memory) * C(model_name) + \
         C(memory) * C(quant_scheme) + \
-        C(memory) * C(hardware) + \
+        C(memory) * C(processor) + \
         C(batch_size) * C(model_name) + \
         C(batch_size) * C(quant_scheme) + \
-        C(batch_size) * C(hardware) + \
+        C(batch_size) * C(processor) + \
         C(model_name) * C(quant_scheme) + \
-        C(model_name) * C(hardware) + \
-        C(quant_scheme) * C(hardware)",
+        C(model_name) * C(processor) + \
+        C(quant_scheme) * C(processor)",
         data=data).fit()
 
     table = sm.stats.anova_lm(model)
@@ -62,7 +62,7 @@ def predict_inference_time(regression_model, X):
 def get_true_and_pred(dataframe, model):
     dataframe["predicted_inf_time"] = \
         predict_inference_time(model,
-                               dataframe[["cpu", "memory", "batch_size", "model_name", "quant_scheme", "hardware"]])
+                               dataframe[["cpu", "memory", "batch_size", "model_name", "quant_scheme", "processor"]])
     dataframe.sort_values(axis=0, by=["inference_time"])
     y_pred = dataframe["predicted_inf_time"]
     y_true = dataframe["inference_time"]
@@ -95,7 +95,7 @@ def load_experiment_data():
             df = pd.read_csv("data/hw{}_r{}_experiment_data.csv".format(hw, rep), header=None)
             df.columns = ["cpu", "memory", "batch_size", "model_name", "quant_scheme", "accuracy", "inference_time",
                           "model_size_mb"]
-            df["hardware"] = hw
+            df["processor"] = hw
             df["repetition"] = rep
             if combined_df is None:
                 combined_df = df
@@ -105,7 +105,7 @@ def load_experiment_data():
 
 
 def split_data(df):
-    X = df[["cpu", "memory", "batch_size", "model_name", "quant_scheme", "hardware"]]
+    X = df[["cpu", "memory", "batch_size", "model_name", "quant_scheme", "processor"]]
     y = df["inference_time"]
     return X, y
 
