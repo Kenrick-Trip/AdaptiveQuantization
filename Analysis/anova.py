@@ -9,7 +9,7 @@ pd.set_option('display.max_columns', 500)
 
 def regression_without_interaction(data):
     model = ols(
-        "inference_time ~ C(cpu) + C(memory) + C(batch_size) + C(model_name) + C(quant_scheme)",
+        "inference_time ~ C(cpu) + C(memory) + C(batch_size) + C(model_name) + C(quant_scheme) + C(hardware)",
         data=data).fit()
 
     table = sm.stats.anova_lm(model)
@@ -47,7 +47,8 @@ def predict_inference_time(regression_model, X):
 
 def get_true_and_pred(dataframe, model):
     dataframe["predicted_inf_time"] = \
-        predict_inference_time(model, dataframe[["cpu", "memory", "batch_size", "model_name", "quant_scheme"]])
+        predict_inference_time(model,
+                               dataframe[["cpu", "memory", "batch_size", "model_name", "quant_scheme", "hardware"]])
     dataframe.sort_values(axis=0, by=["inference_time"])
     y_pred = dataframe["predicted_inf_time"]
     y_true = dataframe["inference_time"]
@@ -65,7 +66,7 @@ def visualize_prediction_errors(y_pred, y_true, file_name_to_save="plots/regress
 
 
 def load_experiment_data():
-    hws = [1]
+    hws = [1, 2, 3]
     reps = [1, 2, 3]
     combined_df = None
     for hw in hws:
