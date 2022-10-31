@@ -2,7 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from sklearn.metrics import r2_score
+from sklearn.model_selection import train_test_split
 from statsmodels.formula.api import ols
+
 
 pd.set_option('display.max_columns', 500)
 
@@ -21,16 +24,27 @@ def regression_without_interaction(data):
 def regression_with_pairwise_interactions(data):
     model = ols(
         "inference_time ~ \
+        C(cpu) + \
+        C(memory) + \
+        C(batch_size) + \
+        C(model_name) + \
+        C(quant_scheme) + \
+        C(hardware) +\
         C(cpu) * C(memory) + \
         C(cpu) * C(batch_size) + \
         C(cpu) *  C(model_name) + \
         C(cpu) *  C(quant_scheme) + \
+        C(cpu) *  C(hardware) + \
         C(memory) * C(batch_size) + \
         C(memory) * C(model_name) + \
         C(memory) * C(quant_scheme) + \
+        C(memory) * C(hardware) + \
         C(batch_size) * C(model_name) + \
         C(batch_size) * C(quant_scheme) + \
-        C(model_name) * C(quant_scheme)",
+        C(batch_size) * C(hardware) + \
+        C(model_name) * C(quant_scheme) + \
+        C(model_name) * C(hardware) + \
+        C(quant_scheme) * C(hardware)",
         data=data).fit()
 
     table = sm.stats.anova_lm(model)
@@ -57,6 +71,7 @@ def get_true_and_pred(dataframe, model):
 
 def visualize_prediction_errors(y_pred, y_true, file_name_to_save="plots/regression_prediction_error.png"):
     diff = y_true - y_pred
+    print(r2_score(y_true=y_true, y_pred=y_pred))
     diff.hist(bins=40)
     plt.title('Histogram of prediction errors')
     plt.xlabel('Inference time (ms) prediction error')
@@ -83,10 +98,22 @@ def load_experiment_data():
     return combined_df
 
 
+def split_data(df):
+    X = df[["cpu", "memory", "batch_size", "model_name", "quant_scheme", "hardware"]]
+    y = df["inference_time"]
+    return X, y
+
+
 if __name__ == "__main__":
     df = load_experiment_data()
+    X, y = split_data(df)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    regr_train_data = X_train
+    regr_train_data["inference_time"] = y_train
+    regr_test_data = X_test
+    regr_test_data["inference_time"] = y_test
     model = regression_without_interaction(df)
-    # model = regression_with_pairwise_interactions(df)
-    y_pred, y_true = get_true_and_pred(df, model)
+    # model = regression_with_pairwise_interactions(regr_train_data)
+    y_pred, y_true = get_true_and_pred(regr_test_data, model)
     visualize_prediction_errors(y_pred, y_true)
 

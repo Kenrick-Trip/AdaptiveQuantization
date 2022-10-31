@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import r2_score
 
-from Analysis.anova import load_experiment_data, visualize_prediction_errors
+from Analysis.anova import load_experiment_data, visualize_prediction_errors, split_data
 from Analysis.hyper_param_opt import tune_mlp, tune_elastic_net
 
 
@@ -25,12 +25,6 @@ def elastic_net(X_train, y_train, **kwargs):
     regr = linear_model.ElasticNet(**kwargs, random_state=1)
     regr.fit(X=X_train, y=y_train)
     return regr
-
-
-def split_data(df):
-    X = df[["cpu", "memory", "batch_size", "model_name", "quant_scheme"]]
-    y = df["inference_time"]
-    return X, y
 
 
 def get_predictions(regr, X_test):
