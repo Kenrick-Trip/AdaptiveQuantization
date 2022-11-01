@@ -31,8 +31,9 @@ class SimulateSystem:
     def specify_data(self):
         # for MG1 system:
         setting = "load"
+        sys = "test"
 
-        if setting == "save":
+        if setting == "save" and sys == "test":
             inter_arrivals = np.random.exponential(scale=1/self.lambda_mean, size=self.n)
             self.arrival_t = np.cumsum(inter_arrivals)
             np.save("arrival_t.npy", self.arrival_t)
@@ -45,10 +46,32 @@ class SimulateSystem:
             self.cont_3_service_t = uq_service_t
             self.uq_service_t = uq_service_t
 
-        elif setting == "load":
+        elif setting == "save" and sys == "real":
+            inter_arrivals = np.random.exponential(scale=1/self.lambda_mean, size=self.n)
+            self.arrival_t = np.cumsum(inter_arrivals)
+            np.save("rarrival_t.npy", self.arrival_t)
+            self.q_service_t = np.abs(np.random.normal(loc=self.mean_s_q, scale=self.std_s_q, size=self.n))
+            np.save("rqservice_t.npy", self.q_service_t)
+            uq_service_t = np.abs(np.random.normal(loc=self.mean_s_uq, scale=self.std_s_uq, size=self.n))
+            np.save("ruqservice_t.npy", uq_service_t)
+            self.cont_1_service_t = uq_service_t
+            self.cont_2_service_t = uq_service_t
+            self.cont_3_service_t = uq_service_t
+            self.uq_service_t = uq_service_t
+
+        elif setting == "load" and sys == "test":
             self.arrival_t = np.load("arrival_t.npy")
             self.q_service_t = np.load("qservice_t.npy")
             uq_service_t = np.load("uqservice_t.npy")
+            self.cont_1_service_t = uq_service_t
+            self.cont_2_service_t = uq_service_t
+            self.cont_3_service_t = uq_service_t
+            self.uq_service_t = uq_service_t
+
+        elif setting == "load" and sys == "real":
+            self.arrival_t = np.load("rarrival_t.npy")
+            self.q_service_t = np.load("rqservice_t.npy")
+            uq_service_t = np.load("ruqservice_t.npy")
             self.cont_1_service_t = uq_service_t
             self.cont_2_service_t = uq_service_t
             self.cont_3_service_t = uq_service_t
@@ -148,7 +171,6 @@ class SimulateSystem:
         self.specify_data()
         self.reset_times(controller_setting, controller_type)
 
-
         jobs_in_sys.append(0)
         jobs_in_q.append(0)
         job_event_times.append(0)
@@ -237,7 +259,7 @@ def plot_jobs_in_queue(sim):
              linestyle="--", color="purple")
     plt.plot(t, aq2_queue, alpha=0.9, label="Stochastic controller, accuracy = {:.1f}%".format(aq2_acc), color="c")
     plt.plot(t, np.ones(len(t)) * np.mean(aq2_queue), label="Mean queue size: {:.1f}".format(np.mean(aq2_queue)),
-             linestyle="--", color="c")
+            linestyle="--", color="c")
     plt.plot(t, np.ones(len(t)) * target_queue_size, label="Target queue size: {:.1f}".format(target_queue_size),
              linestyle="--", color="black")
     plt.legend(loc="upper left")
@@ -259,23 +281,44 @@ def plot_jobs_in_queue(sim):
 
 
 if __name__ == "__main__":
-    # system properties:
-    num_tasks = 10000
-    target_queue_size = 30
+    setting = "test"
+    if setting == "test":
+        # system properties:
+        num_tasks = 10000
+        target_queue_size = 30
 
-    # data from ANOVA:
-    lambda_mean = 0.5
+        # data from ANOVA:
+        lambda_mean = 0.5
 
-    # quantized job -> faster, less accurate
-    # s equals service time for stability: 1/lambda_mean > mean_s
-    mean_s_q = 1.8
-    std_s_q = 0.2
-    q_accuracy = 67
+        # quantized job -> faster, less accurate
+        # s equals service time for stability: 1/lambda_mean > mean_s
+        mean_s_q = 1.8
+        std_s_q = 0.2
+        q_accuracy = 67
 
-    # unquantized job -> slower, more accurate
-    mean_s_uq = 1.998
-    std_s_uq = 0.1
-    uq_accuracy = 72
+        # unquantized job -> slower, more accurate
+        mean_s_uq = 1.998
+        std_s_uq = 0.1
+        uq_accuracy = 72
+    elif setting == "real":
+        # system properties:
+        num_tasks = 10000
+        target_queue_size = 30
+
+        # data from ANOVA:
+        lambda_mean = 23.37
+
+        # quantized job -> faster, less accurate
+        # s equals service time for stability: 1/lambda_mean > mean_s
+        mean_s_q = 10.718951225280762 / 1000
+        std_s_q = 0.01*mean_s_q
+        q_accuracy = 99.25
+
+        # unquantized job -> slower, more accurate
+        mean_s_uq = 42.75380325317383 / 1000
+        std_s_uq = 0.01*mean_s_uq
+        uq_accuracy = 99.26
+
 
 
     sim = SimulateSystem(num_tasks, target_queue_size, lambda_mean, mean_s_q, std_s_q,
