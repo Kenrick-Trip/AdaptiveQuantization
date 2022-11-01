@@ -1,4 +1,3 @@
-import pandas as pd
 from sklearn import linear_model
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
@@ -45,6 +44,7 @@ def run_with_and_without_tuning(regr_train_func, tune_func, data):
     # find better hyper parameters, get r2_score for regressor trained with these params
     if tune_func is not None:
         best = tune_func(X_train, y_train, seed=42, verbose=1, n_jobs=8)
+        print("best hyper parameters found: {}".format(best))
         regr = regr_train_func(X_train=X_train, y_train=y_train, **best)
         y_pred = get_predictions(regr, X_test)
         tuned_score = r2_score(y_true=y_test, y_pred=y_pred)

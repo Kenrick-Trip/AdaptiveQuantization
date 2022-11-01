@@ -72,6 +72,7 @@ def get_true_and_pred(dataframe, model):
 def visualize_prediction_errors(y_pred, y_true, model_name, finetuned):
     diff = y_true - y_pred
     score = float(r2_score(y_true=y_true, y_pred=y_pred))
+    print("inference time error distribution mean: {:5.3f} and variance: {:5.3f}".format(np.mean(diff), np.var(diff)))
     diff.hist(bins=40)
     main_title_string = "Histogram of prediction errors for"
     if finetuned is None:
