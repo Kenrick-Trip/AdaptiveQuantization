@@ -59,7 +59,7 @@ class Operators:
 
         self.writer = csv.writer(self.log_file)
         header = ["CPU", "Memory", "Batch size", "Model name",
-                  "Quantization scheme", "Accuracy (%)", "Service time (ms)", "Size (bytes)"]
+                  "Quantization scheme", "Accuracy (%)", "Service time (ms)", "Size (MB)"]
         # self.writer.writerow(header)
 
     def print_experiment_params(self):
