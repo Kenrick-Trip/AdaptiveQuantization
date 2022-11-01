@@ -146,8 +146,8 @@ class SimulateSystem:
                     self.jobs_quantized += 1
 
             if controller_type == "stochastic":
-                p0 = 0.5
-                k = 0.05
+                p0 = 0.3
+                k = 0.01
                 p = np.clip(p0 - error*k, 0, 1)
                 r = np.random.rand()
 
