@@ -30,14 +30,29 @@ class SimulateSystem:
 
     def specify_data(self):
         # for MG1 system:
-        inter_arrivals = np.random.exponential(scale=1/self.lambda_mean, size=self.n)
-        self.arrival_t = np.cumsum(inter_arrivals)
-        self.q_service_t = np.abs(np.random.normal(loc=self.mean_s_q, scale=self.std_s_q, size=self.n))
-        uq_service_t = np.abs(np.random.normal(loc=self.mean_s_uq, scale=self.std_s_uq, size=self.n))
-        self.cont_1_service_t = uq_service_t
-        self.cont_2_service_t = uq_service_t
-        self.cont_3_service_t = uq_service_t
-        self.uq_service_t = uq_service_t
+        setting = "load"
+
+        if setting == "save":
+            inter_arrivals = np.random.exponential(scale=1/self.lambda_mean, size=self.n)
+            self.arrival_t = np.cumsum(inter_arrivals)
+            np.save("arrival_t.npy", self.arrival_t)
+            self.q_service_t = np.abs(np.random.normal(loc=self.mean_s_q, scale=self.std_s_q, size=self.n))
+            np.save("qservice_t.npy", self.q_service_t)
+            uq_service_t = np.abs(np.random.normal(loc=self.mean_s_uq, scale=self.std_s_uq, size=self.n))
+            np.save("uqservice_t.npy", uq_service_t)
+            self.cont_1_service_t = uq_service_t
+            self.cont_2_service_t = uq_service_t
+            self.cont_3_service_t = uq_service_t
+            self.uq_service_t = uq_service_t
+
+        elif setting == "load":
+            self.arrival_t = np.load("arrival_t.npy")
+            self.q_service_t = np.load("qservice_t.npy")
+            uq_service_t = np.load("uqservice_t.npy")
+            self.cont_1_service_t = uq_service_t
+            self.cont_2_service_t = uq_service_t
+            self.cont_3_service_t = uq_service_t
+            self.uq_service_t = uq_service_t
 
     def reset_times(self, controller_setting, controller_type):
         self.start_t = np.zeros(self.n)
@@ -108,8 +123,8 @@ class SimulateSystem:
                     self.jobs_quantized += 1
 
             if controller_type == "stochastic":
-                p0 = 0.3
-                k = 0.3
+                p0 = 0.5
+                k = 0.05
                 p = np.clip(p0 - error*k, 0, 1)
                 r = np.random.rand()
 
@@ -126,12 +141,12 @@ class SimulateSystem:
         jobs_in_q = []
         job_event_times = []
 
-        self.specify_data()
-        self.reset_times(controller_setting, controller_type)
-
         # log values
         self.jobs_quantized = 0
         self.quantizations = []
+
+        self.specify_data()
+        self.reset_times(controller_setting, controller_type)
 
 
         jobs_in_sys.append(0)
@@ -208,22 +223,22 @@ def plot_jobs_in_queue(sim):
     print("Average accuracy with using the adaptive quantization controller: {} %".format(aq1_acc))
     print("Average accuracy with using the adaptive quantization controller: {} %".format(aq2_acc))
 
-    plt.plot(t, q_queue, alpha=0.9, label="Quantized model, accuracy = {:.2f}".format(q_acc), color="b")
-    plt.plot(t, np.ones(len(t))*np.mean(q_queue), label="Mean queue size: {:.2f}".format(np.mean(q_queue)),
+    plt.plot(t, q_queue, alpha=0.9, label="Quantized model, accuracy = {:.1f}%".format(q_acc), color="b")
+    plt.plot(t, np.ones(len(t))*np.mean(q_queue), label="Mean queue size: {:.1f}".format(np.mean(q_queue)),
              linestyle="--", color="b")
-    plt.plot(t, uq_queue, alpha=0.9, label="Unquantized model, accuracy = {:.2f}".format(uq_acc), color="r")
-    plt.plot(t, np.ones(len(t)) * np.mean(uq_queue), label="Mean queue size: {:.2f}".format(np.mean(uq_queue)),
+    plt.plot(t, uq_queue, alpha=0.9, label="Unquantized model, accuracy = {:.1f}%".format(uq_acc), color="r")
+    plt.plot(t, np.ones(len(t)) * np.mean(uq_queue), label="Mean queue size: {:.1f}".format(np.mean(uq_queue)),
              linestyle="--", color="r")
-    plt.plot(t, aq0_queue, alpha=0.9, label="Quantization conditional controller, accuracy = {:.2f}".format(aq0_acc), color="g")
-    plt.plot(t, np.ones(len(t)) * np.mean(aq0_queue), label="Mean queue size: {:.2f}".format(np.mean(aq0_queue)),
+    plt.plot(t, aq0_queue, alpha=0.9, label="Conditional controller, accuracy = {:.1f}%".format(aq0_acc), color="g")
+    plt.plot(t, np.ones(len(t)) * np.mean(aq0_queue), label="Mean queue size: {:.1f}".format(np.mean(aq0_queue)),
              linestyle="--", color="g")
-    plt.plot(t, aq1_queue, alpha=0.9, label="Quantization probabilistic controller, accuracy = {:.2f}".format(aq1_acc), color="purple")
-    plt.plot(t, np.ones(len(t)) * np.mean(aq1_queue), label="Mean queue size: {:.2f}".format(np.mean(aq1_queue)),
+    plt.plot(t, aq1_queue, alpha=0.9, label="Probabilistic controller, accuracy = {:.1f}%".format(aq1_acc), color="purple")
+    plt.plot(t, np.ones(len(t)) * np.mean(aq1_queue), label="Mean queue size: {:.1f}".format(np.mean(aq1_queue)),
              linestyle="--", color="purple")
-    plt.plot(t, aq2_queue, alpha=0.9, label="Quantization stochastic controller, accuracy = {:.2f}".format(aq2_acc), color="c")
-    plt.plot(t, np.ones(len(t)) * np.mean(aq2_queue), label="Mean queue size: {:.2f}".format(np.mean(aq2_queue)),
+    plt.plot(t, aq2_queue, alpha=0.9, label="Stochastic controller, accuracy = {:.1f}%".format(aq2_acc), color="c")
+    plt.plot(t, np.ones(len(t)) * np.mean(aq2_queue), label="Mean queue size: {:.1f}".format(np.mean(aq2_queue)),
              linestyle="--", color="c")
-    plt.plot(t, np.ones(len(t)) * target_queue_size, label="Target queue size: {:.2f}".format(target_queue_size),
+    plt.plot(t, np.ones(len(t)) * target_queue_size, label="Target queue size: {:.1f}".format(target_queue_size),
              linestyle="--", color="black")
     plt.legend(loc="upper left")
     plt.ylabel("Jobs in the queue")
@@ -231,9 +246,9 @@ def plot_jobs_in_queue(sim):
     plt.title("Number of jobs in the queue over time")
     plt.show()
 
-    plt.plot(j, quants0, alpha=0.9, label="Conditional selection", color="g")
-    plt.plot(j, quants1, alpha=0.9, label="Probabilistic selection", color="purple")
-    plt.plot(j, quants2, alpha=0.9, label="Stochastic selection", color="c")
+    plt.plot(j, quants0, alpha=0.9, label="Conditional controller", color="g")
+    plt.plot(j, quants1, alpha=0.9, label="Probabilistic controller", color="purple")
+    plt.plot(j, quants2, alpha=0.9, label="Stochastic controller", color="c")
     plt.legend(loc="upper left")
     plt.ylabel("Jobs quantized")
     plt.xlabel("jobs arrived")
@@ -255,12 +270,12 @@ if __name__ == "__main__":
     # s equals service time for stability: 1/lambda_mean > mean_s
     mean_s_q = 1.8
     std_s_q = 0.2
-    q_accuracy = 80
+    q_accuracy = 67
 
     # unquantized job -> slower, more accurate
     mean_s_uq = 1.998
     std_s_uq = 0.1
-    uq_accuracy = 90
+    uq_accuracy = 72
 
 
     sim = SimulateSystem(num_tasks, target_queue_size, lambda_mean, mean_s_q, std_s_q,
