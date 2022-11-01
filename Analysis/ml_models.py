@@ -55,7 +55,7 @@ def run_with_and_without_tuning(regr_train_func, tune_func, data):
 
 if __name__ == "__main__":
     df = load_experiment_data()
-    X, y = split_data(df)
+    X, y = split_data(df, factors_to_use=["cpu", "batch_size", "model_name", "quant_scheme", "processor"])
     ohe = OneHotEncoder()
     ohe_X = ohe.fit_transform(X)
     data = train_test_split(ohe_X, y, random_state=1)

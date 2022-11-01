@@ -104,8 +104,8 @@ def load_experiment_data():
     return combined_df
 
 
-def split_data(df):
-    X = df[["cpu", "memory", "batch_size", "model_name", "quant_scheme", "processor"]]
+def split_data(df, factors_to_use=["cpu", "memory", "batch_size", "model_name", "quant_scheme", "processor"]):
+    X = df[factors_to_use]
     y = df["inference_time"]
     return X, y
 
