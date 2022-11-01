@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# used: https://github.com/williewheeler/stats-demos/blob/master/queueing/single-queue-sim.ipynb for inspiration
+# Based on https://github.com/williewheeler/stats-demos/blob/master/queueing/single-queue-sim.ipynb
 class SimulateSystem:
     def __init__(self, num_tasks, target_queue_size, lambda_mean, mean_s_q, std_s_q,
                  mean_s_uq, std_s_uq, q_accuracy, uq_accuracy):

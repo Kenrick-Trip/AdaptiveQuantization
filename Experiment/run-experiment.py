@@ -23,6 +23,7 @@ class Experiment:
         with open(self.dir+'model_sizes.pickle', 'rb') as handle:
             self.model_sizes = pickle.load(handle)
 
+    # Perform inference task
     def inference(self):
         model = self.load_model()
         service_time = measure_inference_latency(model=model, device=self.cpu_device,
@@ -31,6 +32,7 @@ class Experiment:
         model_size = self.model_sizes[self.model_name][self.quant_setting]
         return accuracy, service_time, model_size
 
+    # Load the model
     def load_model(self):
         path = "{}{}_jit_{}_mnist.pt".format(self.dir, self.model_name, self.quant_setting)
         return load_torchscript_model(
@@ -62,6 +64,7 @@ class Operators:
                   "Quantization scheme", "Accuracy (%)", "Service time (ms)", "Size (MB)"]
         # self.writer.writerow(header)
 
+    # Debug printing.
     def print_experiment_params(self):
         print("-------------")
         print("Running experiment with:")
@@ -71,6 +74,7 @@ class Operators:
         print("Model name : ", str(self.args[self.arg_modelname]))
         print("Quantization scheme : ", str(self.args[self.arg_quant_setting]))
 
+    # Write the results to a CSV file on the volume
     def write_results(self, accuracy, service_time, model_size):
         data = [
             str(self.args[self.arg_cpu]),
@@ -85,6 +89,7 @@ class Operators:
         print(*data, sep=", ")
         self.writer.writerow(data)
 
+    # Exit result writer.
     def exit(self):
         self.log_file.close()
 
